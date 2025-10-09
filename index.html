@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Circle Game Prototype</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+    <link rel="stylesheet" href="style/main.css" />
+  </head>
+  <body>
+    <div id="map-controls">
+      <button id="map1-btn">Classic Venn</button>
+      <button id="map2-btn">Three Overlap</button>
+      <button id="map3-btn">Contained</button>
+      <button id="map4-btn">HARD!</button>
+    </div>
+    <div id="progress-container">
+      Progress: <span id="progress-value">0%</span>
+    </div>
+    <div id="result-panel">
+      <div id="result-title">Result</div>
+      <div id="result-stats">
+        <!-- Stats like time spent, remaining lives, etc. -->
+      </div>
+      <div class="button-container">
+        <button id="restart-btn">Restart</button>
+        <button id="level-btn">Pick Level</button>
+      </div>
+      </div>
+    </div>
+    <script type= "module" src="scripts/Main.js"></script>
+  </body>
+</html>
