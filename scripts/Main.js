@@ -7,6 +7,8 @@ import {
     classicVen,
     threeCircleVenn,
     planetarySystem,
+    caterpillarChain,
+    bubbleCluster,
     generateChaoticBoard
 } from "./BoardData.js";
 
@@ -43,10 +45,14 @@ const sketch = (p) => {
         const map2Button = document.getElementById('map2-btn');
         const map3Button = document.getElementById('map3-btn');
         const map4Button = document.getElementById('map4-btn');
+        const map5Button = document.getElementById('map5-btn');
+        const map6Button = document.getElementById('map6-btn');
         map1Button.addEventListener('click', () => loadMap(classicVen));
         map2Button.addEventListener('click', () => loadMap(threeCircleVenn));
         map3Button.addEventListener('click', () => loadMap(planetarySystem));
-        map4Button.addEventListener('click', () => loadMap(generateChaoticBoard(p, 50, 40)));
+        map4Button.addEventListener('click', () => loadMap(caterpillarChain));
+        map5Button.addEventListener('click', () => loadMap(bubbleCluster));
+        map6Button.addEventListener('click', () => loadMap(generateChaoticBoard(p, 50)));
 
         lastBoard = classicVen;
 
