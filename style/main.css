@@ -44,6 +44,30 @@ body {
     text-align: center;
 }
 
+#zoom-controls {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+#zoom-controls button {
+    padding: 8px 12px;
+    margin-top: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid #555;
+    background-color: #333;
+    color: white;
+    border-radius: 4px;
+}
+
+#zoom-controls button:hover {
+    background-color: #3498db;
+}
+
 #result-panel {
     display: none;
     position: fixed;
