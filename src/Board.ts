@@ -27,12 +27,8 @@ export class Board {
                 }
             }
         }
-        console.log(`Calculated intersections: ${this.intersections.length}`);
-        console.log(this.intersections);
         // Merge overlapping or adjacent arcs
         this.intersections = joinIntersections(this.intersections);
-        console.log(`Calculated intersections: ${this.intersections.length}`);
-        console.log(this.intersections);
     }
 
     getRemainingCuts(): number {
