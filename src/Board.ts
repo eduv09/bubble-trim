@@ -27,7 +27,6 @@ export class Board {
                 }
             }
         }
-        // Merge overlapping or adjacent arcs
         this.intersections = joinIntersections(this.intersections);
     }
 
