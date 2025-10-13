@@ -43,6 +43,7 @@ jobs:
         run: |
           mkdir -p _site
           cp -r dist/ _site/dist
+          cp -r style/ _site/style
           cp index.html _site/index.html
 
       - name: Upload artifact ⬆️
