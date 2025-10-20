@@ -69,3 +69,65 @@ export const generateChaoticBoard = (p: any, n: number, minRadius = 20, maxRadiu
     }
     return circles;
 };
+
+/**
+ * Generates a level with circles based on board size.
+ * The number of circles is calculated from the board area and circle sizes.
+ *
+ * @param width - Fixed width of the board
+ * @param height - Fixed height of the board
+ * @param boardSizeFactor - Factor to control level difficulty (0.5 = easy, 1.0 = medium, 1.5 = hard)
+ * @param minRadius - Minimum radius for circles
+ * @param maxRadius - Maximum radius for circles
+ * @returns Array of circles for the level
+ */
+export const generateLevel = (
+    width: number,
+    height: number,
+    minRadius: number = 20,
+    maxRadius: number = 100
+): ICircle[] => {
+    const boardArea = width * height;
+
+    // Calculate average circle area
+    const avgRadius = (minRadius + maxRadius) / 2;
+    const avgCircleArea = Math.PI * avgRadius * avgRadius;
+
+    // Calculate number of circles based on board coverage
+    // Target coverage: 40-60% of board area with overlap tolerance
+    const targetCoverage = 0.5;
+    const overlapFactor = 0.7; // Accounts for overlaps reducing effective area
+    const n = Math.floor((boardArea * targetCoverage) / (avgCircleArea * overlapFactor));
+
+    // Ensure we have at least 2 circles and not too many
+    const circleCount = Math.max(2, Math.min(n, 15));
+
+    const circles: ICircle[] = [];
+    const x0 = -width / 2;
+    const y0 = -height / 2;
+    let attempts = 0;
+
+    while (circles.length < circleCount && attempts < circleCount * 20) {
+        attempts++;
+        const r = minRadius + Math.random() * (maxRadius - minRadius);
+        const x = x0 + r + Math.random() * (width - 2 * r);
+        const y = y0 + r + Math.random() * (height - 2 * r);
+
+        let contained = false;
+        for (const c of circles) {
+            if (r < c.radius) {
+                const dist = Math.hypot(x - c.center.x, y - c.center.y);
+                if (dist + r <= c.radius) {
+                    contained = true;
+                    break;
+                }
+            }
+        }
+
+        if (!contained) {
+            circles.push({ center: { x, y }, radius: r });
+        }
+    }
+
+    return circles;
+};

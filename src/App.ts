@@ -6,7 +6,32 @@ import {
     caterpillarChain,
     bubbleCluster,
     generateChaoticBoard,
+    generateLevel
 } from './BoardData.js';
+
+/**
+ * Creates and adds a level button to the map-controls container
+ * @param label - The text label for the button
+ * @param onClick - The callback function when button is clicked
+ * @param id - Optional custom ID for the button (auto-generated if not provided)
+ * @returns The created button element
+ */
+function createLevelButton(label: string, onClick: () => void, id?: string): HTMLButtonElement {
+    const container = document.getElementById('map-controls');
+    if (!container) {
+        throw new Error('map-controls container not found');
+    }
+
+    const button = document.createElement('button');
+    button.textContent = label;
+    if (id) {
+        button.id = id;
+    }
+    button.addEventListener('click', onClick);
+    container.appendChild(button);
+
+    return button;
+}
 
 const sketch = (p: any) => {
     let activeBoard: Board;
@@ -37,10 +62,48 @@ const sketch = (p: any) => {
         zoomLevel = 1.0;
         panX = 0;
         panY = 0;
+    }
+    /**
+     * Calculates the bounding box of all circles and returns the required scale to fit on screen
+     */
+    const calculateZoomScale = (circles: any[]): number => {
+        if (circles.length === 0) return 1.0;
+
+        // Find bounding box of all circles
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+
+        circles.forEach(circle => {
+            const left = circle.center.x - circle.radius;
+            const right = circle.center.x + circle.radius;
+            const top = circle.center.y - circle.radius;
+            const bottom = circle.center.y + circle.radius;
+
+            minX = Math.min(minX, left);
+            maxX = Math.max(maxX, right);
+            minY = Math.min(minY, top);
+            maxY = Math.max(maxY, bottom);
+        });
+
+        const circlesBoundWidth = maxX - minX;
+        const circlesBoundHeight = maxY - minY;
+
+        // Calculate available screen space (leave some padding)
+        const padding = 0.9; // Use 90% of screen space
+        const availableWidth = p.width * padding;
+        const availableHeight = p.height * padding;
+
+        // Calculate scale needed to fit both dimensions
+        const scaleX = availableWidth / circlesBoundWidth;
+        const scaleY = availableHeight / circlesBoundHeight;
+
+        // Use the smaller scale to ensure everything fits
+        return Math.min(scaleX, scaleY, 1.5); // Cap maximum zoom at 1.5x
     };
 
     const loadMap = (circles: any) => {
         activeBoard = new Board(p, circles);
+        zoomLevel = calculateZoomScale(circles);
         updateProgress();
         lastBoard = circles;
         isPlaying = true;
@@ -52,18 +115,19 @@ const sketch = (p: any) => {
     p.setup = () => {
         p.createCanvas(p.windowWidth, p.windowHeight);
         activeBoard = new Board(p, classicVen);
-        const map1Button = document.getElementById('map1-btn');
-        const map2Button = document.getElementById('map2-btn');
-        const map3Button = document.getElementById('map3-btn');
-        const map4Button = document.getElementById('map4-btn');
-        const map5Button = document.getElementById('map5-btn');
-        const map6Button = document.getElementById('map6-btn');
-        map1Button?.addEventListener('click', () => loadMap(classicVen));
-        map2Button?.addEventListener('click', () => loadMap(threeCircleVenn));
-        map3Button?.addEventListener('click', () => loadMap(planetarySystem));
-        map4Button?.addEventListener('click', () => loadMap(caterpillarChain));
-        map5Button?.addEventListener('click', () => loadMap(bubbleCluster));
-        map6Button?.addEventListener('click', () => loadMap(generateChaoticBoard(p, 50)));
+
+        // Create level buttons programmatically
+        createLevelButton('Classic Venn', () => loadMap(classicVen), 'map1-btn');
+        createLevelButton('Three Overlap', () => loadMap(threeCircleVenn), 'map2-btn');
+        createLevelButton('Planetary System', () => loadMap(planetarySystem), 'map3-btn');
+        createLevelButton('Caterpillar', () => loadMap(caterpillarChain), 'map4-btn');
+        createLevelButton('Bubble Cluster', () => loadMap(bubbleCluster), 'map5-btn');
+        //createLevelButton('HARD!', () => loadMap(generateChaoticBoard(p, 50)), 'map6-btn');
+        createLevelButton('Level 1', () => loadMap(generateLevel(700, 350)), 'map6-btn');
+        createLevelButton('Level 2', () => loadMap(generateLevel(1400, 700)), 'map7-btn');
+        createLevelButton('Level 3', () => loadMap(generateLevel(2800, 1400)), 'map8-btn');
+
+
         lastBoard = classicVen;
         const restartBtn = document.getElementById('restart-btn');
         const levelBtn = document.getElementById('level-btn');
