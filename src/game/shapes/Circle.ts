@@ -1,6 +1,6 @@
 import type p5 from 'p5';
-import { subtractArc, lineIntersectsArc } from './utils/utils.js';
-import { IArc, ILine, ICircle, IPoint } from './types.js';
+import { subtractArc, lineIntersectsArc } from '../../utils/mathUtils.js';
+import { IArc, ILine, ICircle, IPoint } from '../types.js';
 
 export class Circle implements ICircle {
     private p: p5;

@@ -1,5 +1,5 @@
-import { Circle } from '../Circle.js';
-import { IPoint, ILine, IArc, ICircle } from '../types.js';
+import { Circle } from '../game/shapes/Circle.js';
+import { IPoint, ILine, IArc, ICircle } from '../game/types.js';
 
 /**
  * Checks if a line segment intersects with a circular arc.
@@ -265,7 +265,6 @@ export function intersectTwoCircles(circle1: Circle, circle2: Circle): IArc[] {
 
 
 export function joinIntersections (arcs: IArc[]): IArc[] {
-    console.log('Joining intersections:', arcs);
 	if (arcs.length === 0) return [];
 	const arcsByCircle = new Map<Circle, IArc[]>();
 	for (const arc of arcs) {

@@ -1,0 +1,10 @@
+/**
+ * Base styles and global resets
+ */
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevents scrollbars */
+}

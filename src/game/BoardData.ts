@@ -40,36 +40,6 @@ export const bubbleCluster: ICircle[] = [
     { center: { x: -20, y: -95 }, radius: 25 },
 ];
 
-export const generateChaoticBoard = (p: any, n: number, minRadius = 20, maxRadius = 100): ICircle[] => {
-    if (n <= 0) return [];
-    const circles: ICircle[] = [];
-    const usableWidth = p.width * 0.8;
-    const usableHeight = p.height * 0.8;
-    const x0 = -usableWidth / 2;
-    const y0 = -usableHeight / 2;
-    let attempts = 0;
-    while (circles.length < n && attempts < n * 20) {
-        attempts++;
-        const r = minRadius + Math.random() * (maxRadius - minRadius);
-        const x = x0 + r + Math.random() * (usableWidth - 2 * r);
-        const y = y0 + r + Math.random() * (usableHeight - 2 * r);
-        let contained = false;
-        for (const c of circles) {
-            if (r < c.radius) {
-                const dist = Math.hypot(x - c.center.x, y - c.center.y);
-                if (dist + r <= c.radius) {
-                    contained = true;
-                    break;
-                }
-            }
-        }
-        if (!contained) {
-            circles.push({ center: { x, y }, radius: r });
-        }
-    }
-    return circles;
-};
-
 /**
  * Generates a level with circles based on board size.
  * The number of circles is calculated from the board area and circle sizes.
@@ -95,12 +65,11 @@ export const generateLevel = (
 
     // Calculate number of circles based on board coverage
     // Target coverage: 40-60% of board area with overlap tolerance
-    const targetCoverage = 0.5;
     const overlapFactor = 0.7; // Accounts for overlaps reducing effective area
-    const n = Math.floor((boardArea * targetCoverage) / (avgCircleArea * overlapFactor));
+    const n = Math.floor((boardArea / 2) / (avgCircleArea * overlapFactor));
 
     // Ensure we have at least 2 circles and not too many
-    const circleCount = Math.max(2, Math.min(n, 15));
+    const circleCount = Math.max(2, n);
 
     const circles: ICircle[] = [];
     const x0 = -width / 2;
@@ -115,12 +84,18 @@ export const generateLevel = (
 
         let contained = false;
         for (const c of circles) {
-            if (r < c.radius) {
-                const dist = Math.hypot(x - c.center.x, y - c.center.y);
-                if (dist + r <= c.radius) {
-                    contained = true;
-                    break;
-                }
+            const dist = Math.hypot(x - c.center.x, y - c.center.y);
+
+            // Check if new circle is inside existing circle
+            if (dist + r <= c.radius) {
+                contained = true;
+                break;
+            }
+
+            // Check if existing circle is inside new circle
+            if (dist + c.radius <= r) {
+                contained = true;
+                break;
             }
         }
 

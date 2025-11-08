@@ -1,108 +1,22 @@
-/* A little CSS to make the canvas fill the screen */
-html,
-body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden; /* Prevents scrollbars */
-}
+/**
+ * Main CSS Entry Point
+ * Imports all component-specific stylesheets
+ */
 
-/* Style for the button container */
-#map-controls {
-    position: fixed; /* Keeps it in place even on scroll */
-    top: 15px;
-    left: 15px;
-    z-index: 1000; /* Ensures buttons are on top of the canvas */
-    display: flex;
-    flex-direction: column;
-}
-/* Style for the buttons */
-#map-controls button {
-    padding: 8px 12px;
-    margin-bottom: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    border: 1px solid #555;
-    background-color: #333;
-    color: white;
-    border-radius: 4px;
-}
-#map-controls button:hover {
-    background-color: #4caf50; /* A nice green for hover */
-}
+/* Base styles and global resets */
+@import url('base.css');
 
-#progress-container {
-    position: fixed;
-    top: 15px;
-    right: 15px;
-    z-index: 1000;
-    background: #222;
-    padding: 10px 16px;
-    border-radius: 6px;
-    color: #fff;
-    font-size: 16px;
-    min-width: 120px;
-    text-align: center;
-}
+/* Game controls (level buttons, zoom, pan) */
+@import url('controls.css');
 
-#zoom-controls {
-    position: fixed;
-    bottom: 15px;
-    right: 15px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-}
+/* Progress indicator */
+@import url('progress.css');
 
-#zoom-controls button {
-    padding: 8px 12px;
-    margin-top: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    border: 1px solid #555;
-    background-color: #333;
-    color: white;
-    border-radius: 4px;
-}
+/* Result panel (victory/loss screen) */
+@import url('result-panel.css');
 
-#zoom-controls button:hover {
-    background-color: #3498db;
-}
+/* Login screen */
+@import url('login.css');
 
-#result-panel {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2000;
-    background: #222;
-    padding: 32px 48px;
-    border-radius: 12px;
-    color: #fff;
-    font-size: 1.5rem;
-    text-align: center;
-    box-shadow: 0 4px 32px #0008;
-    min-width: 320px;
-}
-#result-title {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 12px;
-}
-#result-stats {
-    margin-bottom: 18px;
-}
-#result-panel button {
-    padding: 10px 24px;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-}
-#restart-btn {
-    background: #4caf50;
-}
-#level-btn {
-    background: #3498db;
-}
+/* Player card component */
+@import url('player-card.css');
