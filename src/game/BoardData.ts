@@ -11,6 +11,7 @@ export const classicVen: ICircle[] = [
 
 export const threeCircleVenn: ICircle[] = [
     { center: { x: 0, y: -80 }, radius: 100 },
+    { center: { x: 0, y: 0 }, radius: 30 },
     { center: { x: 70, y: 50 }, radius: 100 },
     { center: { x: -70, y: 50 }, radius: 100 },
 ];

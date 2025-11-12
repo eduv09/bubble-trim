@@ -34,6 +34,14 @@ export class Board {
             }
         }
         this.intersections = joinIntersections(this.intersections);
+        this.intersections = this.intersections.filter( (arc) => {
+            if (Math.abs(arc.startAngle - arc.endAngle) + 0.001 >= 2 * Math.PI) {
+                this.circles = this.circles.filter( c => c !== arc.circle );
+                return false;
+            }
+
+            return true;
+        } );
     }
 
     getRemainingCuts(): number {
