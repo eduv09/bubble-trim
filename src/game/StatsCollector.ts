@@ -1,6 +1,8 @@
+import { Board } from './Board.js';
+import { GameDataManager } from './game-data/GameData.js';
 import { PlayerIdentity } from './PlayerIdentity.js';
 
-export interface GameStats {
+export interface IGameStats {
     playerName: string;
     startTime: number;
     endTime: number | undefined;
@@ -13,8 +15,9 @@ export interface GameStats {
 /**
  * StatsCollector - Collects and manages game statistics
  */
-export abstract class StatsCollector {
-    protected stats: GameStats;
+export class StatsCollector {
+    protected stats: IGameStats;
+    protected gameDataManager: GameDataManager;
 
     constructor(boardName?: string) {
         this.stats = {
@@ -26,6 +29,7 @@ export abstract class StatsCollector {
             successfulIntersections: 0,
             boardName,
         };
+        this.gameDataManager = new GameDataManager(this.stats.playerName);
     }
 
     /**
@@ -47,12 +51,14 @@ export abstract class StatsCollector {
     /**
      * Records the end of a game and calculates duration
      */
-    endGame(): void {
+    endGame(board: Board): void {
         if (this.stats.endTime) {
             return; // Prevent multiple endings
         }
         this.stats.endTime = Date.now();
         this.stats.duration = this.stats.endTime - this.stats.startTime;
+
+        this.gameDataManager.addGameData(this.stats, board);
     }
 
     /**
@@ -73,7 +79,7 @@ export abstract class StatsCollector {
      * Gets the current statistics
      * @returns A copy of the current stats
      */
-    getStats(): GameStats {
+    getStats(): IGameStats {
         return { ...this.stats };
     }
 
@@ -108,12 +114,6 @@ export abstract class StatsCollector {
     }
 
     /**
-     * Abstract method to upload stats to a server/database
-     * Must be implemented by concrete classes
-     */
-    abstract uploadStats(): Promise<void>;
-
-    /**
      * Resets all statistics
      */
     reset(): void {
@@ -127,27 +127,12 @@ export abstract class StatsCollector {
             boardName: this.stats.boardName,
         };
     }
-}
 
-/**
- * Default implementation of StatsCollector for local storage
- */
-export class LocalStatsCollector extends StatsCollector {
     /**
-     * Uploads stats to local storage (or console for now)
+     * Gets the GameDataManager instance
+     * @returns The GameDataManager instance
      */
-    async uploadStats(): Promise<void> {
-        // For now, just log to console
-        // In the future, this could save to localStorage or send to a server
-        console.log('Game Stats:', this.getStats());
-
-        // Example: Save to localStorage
-        try {
-            const allStats = JSON.parse(localStorage.getItem('gameStats') || '[]');
-            allStats.push(this.getStats());
-            localStorage.setItem('gameStats', JSON.stringify(allStats));
-        } catch (error) {
-            console.error('Failed to save stats to localStorage:', error);
-        }
+    getGameDataManager(): GameDataManager {
+        return this.gameDataManager;
     }
 }

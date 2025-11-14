@@ -20,3 +20,15 @@
 
 /* Player card component */
 @import url('player-card.css');
+
+/* Levels panel component */
+@import url('levels-panel.css');
+
+/* Progress card component */
+@import url('progress-card.css');
+
+/* Levels menu button */
+@import url('levels-menu-button.css');
+
+/* Countdown overlay */
+@import url('countdown.css');

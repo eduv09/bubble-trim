@@ -13,9 +13,12 @@ import { GameState } from './game/GameState.js';
 import { InputHandler } from './input/InputHandler.js';
 import { UIManager } from './ui/UIManager.js';
 import { PlayerCard } from './ui/PlayerCard.js';
+import { ProgressCard } from './ui/ProgressCard.js';
+import { Countdown } from './ui/Countdown.js';
 import { AuthManager } from './auth/AuthManager.js';
 import { SimpleAuthProvider } from './auth/SimpleAuthProvider.js';
 import { LoginScreen } from './auth/LoginScreen.js';
+import { LevelsPanel, Level } from './ui/LevelsPanel.js';
 
 const sketch = (p: p5) => {
     let camera: CameraController;
@@ -25,6 +28,9 @@ const sketch = (p: p5) => {
     let authManager: AuthManager;
     let loginScreen: LoginScreen;
     let playerCard: PlayerCard;
+    let progressCard: ProgressCard;
+    let countdown: Countdown;
+    let levelsPanel: LevelsPanel;
     let isGameInitialized = false;
     const backgroundImage = p.loadImage('../assets/background.png');
 
@@ -51,15 +57,21 @@ const sketch = (p: p5) => {
         // Initialize core systems
         soundManager = new SoundManager(p);
         camera = new CameraController(p);
-        gameState = new GameState(p, classicVen, soundManager, camera);
+
+        // Initialize UI components
+        progressCard = new ProgressCard();
+        countdown = new Countdown();
+
+        // Initialize game state with progress card and countdown
+        gameState = new GameState(p, classicVen, soundManager, camera, progressCard, countdown);
         inputHandler = new InputHandler(p, gameState, camera);
 
         // Initialize and show player card
         playerCard = new PlayerCard();
         playerCard.show();
 
-        // Setup level buttons
-        setupLevelButtons();
+        // Setup levels panel
+        setupLevelsPanel();
 
         // Setup UI controls
         setupUIControls();
@@ -75,23 +87,169 @@ const sketch = (p: p5) => {
         console.log(`Game initialized for player: ${authManager.getCurrentUser()}`);
     };
 
-    const setupLevelButtons = () => {
-        UIManager.createLevelButton('Classic Venn', () => gameState.loadMap(classicVen), 'map1-btn');
-        UIManager.createLevelButton('Three Overlap', () => gameState.loadMap(threeCircleVenn), 'map2-btn');
-        UIManager.createLevelButton('Planetary System', () => gameState.loadMap(planetarySystem), 'map3-btn');
-        UIManager.createLevelButton('Caterpillar', () => gameState.loadMap(caterpillarChain), 'map4-btn');
-        UIManager.createLevelButton('Bubble Cluster', () => gameState.loadMap(bubbleCluster), 'map5-btn');
-        UIManager.createLevelButton('Level 1', () => gameState.loadMap(generateLevel(700, 350)), 'map6-btn');
-        UIManager.createLevelButton('Level 2', () => gameState.loadMap(generateLevel(1400, 700)), 'map7-btn');
-        UIManager.createLevelButton('Level 3', () => gameState.loadMap(generateLevel(2800, 1400)), 'map8-btn');
+    const setupLevelsPanel = () => {
+        // Initialize the levels panel with GameDataManager
+        levelsPanel = new LevelsPanel((level: Level) => {
+            gameState.loadMap(level.boardData);
+            // Update the levels menu button visibility
+            updateLevelsMenuButton();
+        }, gameState.statsCollector.getGameDataManager());
+
+        // Set up callback for when panel closes with active game
+        levelsPanel.setOnCloseCallback(() => {
+            // Reload the current board
+            gameState.restart();
+        });
+
+        // Define all levels with metadata
+        const levels: Level[] = [
+            {
+                id: 'classic-venn',
+                name: 'Classic Venn',
+                difficulty: 1,
+                boardData: classicVen,
+                boardName: 'Classic Venn',
+                description: 'Two overlapping circles - perfect for beginners'
+            },
+            {
+                id: 'three-overlap',
+                name: 'Three Overlap',
+                difficulty: 1,
+                boardData: threeCircleVenn,
+                boardName: 'Three Overlap',
+                description: 'Three circles with a central intersection'
+            },
+            {
+                id: 'planetary-system',
+                name: 'Planetary System',
+                difficulty: 1,
+                boardData: planetarySystem,
+                boardName: 'Planetary System',
+                description: 'A large circle with smaller orbiting circles'
+            },
+            {
+                id: 'caterpillar',
+                name: 'Caterpillar',
+                difficulty: 1,
+                boardData: caterpillarChain,
+                boardName: 'Caterpillar',
+                description: 'Chain of overlapping circles'
+            },
+            {
+                id: 'bubble-cluster',
+                name: 'Bubble Cluster',
+                difficulty: 1,
+                boardData: bubbleCluster,
+                boardName: 'Bubble Cluster',
+                description: 'Multiple circles in a cluster formation'
+            },
+            {
+                id: 'level-1',
+                name: 'Challenge 1',
+                difficulty: 2,
+                boardData: generateLevel(700, 350, 20, 100, 'Challenge 1'),
+                boardName: 'Challenge 1',
+                description: 'Randomly generated level - easy difficulty'
+            },
+            {
+                id: 'level-2',
+                name: 'Challenge 2',
+                difficulty: 3,
+                boardData: generateLevel(1400, 700, 20, 100, 'Challenge 2'),
+                boardName: 'Challenge 2',
+                description: 'Randomly generated level - medium difficulty'
+            },
+            {
+                id: 'level-3',
+                name: 'Challenge 3',
+                difficulty: 4,
+                boardData: generateLevel(2800, 1400, 20, 100, 'Challenge 3'),
+                boardName: 'Challenge 3',
+                description: 'Randomly generated level - hard difficulty'
+            },
+            {
+                id: 'level-4',
+                name: 'Challenge 4',
+                difficulty: 4,
+                boardData: generateLevel(3200, 1600, 20, 100, 'Challenge 4'),
+                boardName: 'Challenge 4',
+                description: 'Randomly generated level - hard difficulty'
+            },
+            {
+                id: 'level-5',
+                name: 'Challenge 5',
+                difficulty: 5,
+                boardData: generateLevel(4000, 2000, 20, 100, 'Challenge 5'),
+                boardName: 'Challenge 5',
+                description: 'Randomly generated level - expert difficulty'
+            }
+        ];
+
+        // Add all levels to the panel
+        levelsPanel.addLevels(levels);
+
+        // Show levels panel initially so player can select first level
+        levelsPanel.show();
+
+        // Set up next level callback for GameState
+        gameState.setNextLevelCallback(() => {
+            return levelsPanel.loadNextLevel();
+        });
+    };
+
+    const updateLevelsMenuButton = () => {
+        const levelsMenuBtn = document.getElementById('levels-menu-btn');
+        if (levelsMenuBtn) {
+            if (levelsPanel.isVisible()) {
+                levelsMenuBtn.classList.add('hidden');
+            } else {
+                levelsMenuBtn.classList.remove('hidden');
+            }
+        }
     };
 
     const setupUIControls = () => {
         const restartBtn = document.getElementById('restart-btn');
         const levelBtn = document.getElementById('level-btn');
+        const nextLevelBtn = document.getElementById('next-level-btn');
+        const levelsMenuBtn = document.getElementById('levels-menu-btn');
 
-        restartBtn?.addEventListener('click', () => gameState.restart());
-        levelBtn?.addEventListener('click', () => UIManager.hidePanel('result-panel'));
+        // Levels menu button - toggle panel
+        levelsMenuBtn?.addEventListener('click', () => {
+            if (levelsPanel.isVisible()) {
+                levelsPanel.setHasActiveGame(gameState.isPlaying);
+                levelsPanel.hide();
+            } else {
+                UIManager.hidePanel('result-panel');
+                levelsPanel.setHasActiveGame(gameState.isPlaying);
+                levelsPanel.show();
+            }
+            updateLevelsMenuButton();
+        });
+
+        restartBtn?.addEventListener('click', () => {
+            gameState.restart();
+        });
+
+        levelBtn?.addEventListener('click', () => {
+            UIManager.hidePanel('result-panel');
+            levelsPanel.setHasActiveGame(false);
+            levelsPanel.show();
+            updateLevelsMenuButton();
+        });
+
+        nextLevelBtn?.addEventListener('click', () => {
+            const hasNextLevel = gameState.loadNextLevel();
+            if (hasNextLevel) {
+                UIManager.hidePanel('result-panel');
+            } else {
+                // No next level available, show levels panel
+                UIManager.hidePanel('result-panel');
+                levelsPanel.setHasActiveGame(false);
+                levelsPanel.show();
+                updateLevelsMenuButton();
+            }
+        });
     };
 
     const setupCameraControls = () => {
@@ -146,13 +304,16 @@ const sketch = (p: p5) => {
         // Only run game loop if game is initialized (after login)
         if (!isGameInitialized) return;
 
-        if (gameState.isPlaying) {
-            // Handle cutting logic FIRST (before camera panning changes transform)
-            inputHandler.handleCutting();
-        }
+        // Don't allow interactions during countdown
+        if (!gameState.isCountingDown) {
+            if (gameState.isPlaying) {
+                // Handle cutting logic FIRST (before camera panning changes transform)
+                inputHandler.handleCutting();
+            }
 
-        // Handle camera panning (both right-click and left-click)
-        camera.handleMousePanning();
+            // Handle camera panning (both right-click and left-click)
+            camera.handleMousePanning();
+        }
 
         // Draw the cutting line (in screen space, before transform)
         inputHandler.drawCuttingLine();
@@ -164,18 +325,20 @@ const sketch = (p: p5) => {
         gameState.update();
         gameState.activeBoard.draw();
 
-        // Check victory condition
-        gameState.checkVictory();
+        // Check victory condition (only when not counting down)
+        if (!gameState.isCountingDown) {
+            gameState.checkVictory();
+        }
     };
 
     p.mousePressed = () => {
-        if (isGameInitialized) {
+        if (isGameInitialized && !gameState.isCountingDown) {
             inputHandler.onMousePressed();
         }
     };
 
     p.mouseReleased = () => {
-        if (isGameInitialized) {
+        if (isGameInitialized && !gameState.isCountingDown) {
             inputHandler.onMouseReleased();
         }
     };

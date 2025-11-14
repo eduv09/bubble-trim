@@ -2,13 +2,13 @@
  * Controls styles - Level buttons, camera controls, pan controls
  */
 
-/* Level/Map Controls */
+/* Level/Map Controls - DEPRECATED: Now using LevelsPanel instead */
 #map-controls {
     position: fixed;
     top: 15px;
     left: 15px;
     z-index: 1000;
-    display: flex;
+    display: none; /* Hidden - replaced by levels panel */
     flex-direction: column;
 }
 
@@ -105,11 +105,12 @@
     background: #444;
     outline: none;
     -webkit-appearance: none;
+    appearance: none;
 }
 
 #pan-factor-slider::-webkit-slider-thumb {
-    appearance: none;
     -webkit-appearance: none;
+    appearance: none;
     width: 16px;
     height: 16px;
     border-radius: 50%;

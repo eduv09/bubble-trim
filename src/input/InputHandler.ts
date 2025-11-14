@@ -21,6 +21,9 @@ export class InputHandler {
      * Draws the cutting line on screen
      */
     drawCuttingLine(): void {
+        // Don't draw during countdown
+        if (this.gameState.isCountingDown) return;
+
         if (this.p.mouseIsPressed && this.p.mouseButton === this.p.LEFT) {
             this.p.push();
             this.p.stroke(255, 204, 0);
@@ -35,6 +38,9 @@ export class InputHandler {
      * Should be called in the draw loop BEFORE camera panning
      */
     handleCutting(): void {
+        // Don't allow cutting during countdown
+        if (this.gameState.isCountingDown) return;
+
         if (this.p.mouseIsPressed && this.p.mouseButton === this.p.LEFT && this.gameState.isHunting) {
             // Get current world position
             const worldCurr = this.camera.screenToWorld(this.p.mouseX, this.p.mouseY);
@@ -62,6 +68,9 @@ export class InputHandler {
      * Handles mouse press event
      */
     onMousePressed(): void {
+        // Don't allow hunting during countdown
+        if (this.gameState.isCountingDown) return;
+
         if (!this.gameState.isHunting) {
             this.gameState.isHunting = true;
         }

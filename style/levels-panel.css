@@ -1,0 +1,235 @@
+/**
+ * Levels Panel Styles
+ * Grid-based level selection UI
+ */
+
+#levels-panel {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 6rem 2rem 2rem 2rem; /* Extra top padding to avoid player card */
+    overflow-y: auto;
+}
+
+.levels-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.levels-panel-header h2 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: rotate(90deg);
+}
+
+.levels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1200px;
+    padding-bottom: 2rem;
+}
+
+.level-card {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.level-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.level-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.level-card:hover::before {
+    opacity: 1;
+}
+
+/* Difficulty-based subtle variations */
+.level-card.difficulty-1 {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    border-color: rgba(134, 239, 172, 0.2);
+}
+
+.level-card.difficulty-2 {
+    background: linear-gradient(135deg, #475569 0%, #334155 100%);
+    border-color: rgba(147, 197, 253, 0.2);
+}
+
+.level-card.difficulty-3 {
+    background: linear-gradient(135deg, #52525b 0%, #3f3f46 100%);
+    border-color: rgba(253, 224, 71, 0.2);
+}
+
+.level-card.difficulty-4 {
+    background: linear-gradient(135deg, #57534e 0%, #44403c 100%);
+    border-color: rgba(251, 146, 60, 0.2);
+}
+
+.level-card.difficulty-5 {
+    background: linear-gradient(135deg, #5b5563 0%, #4c4452 100%);
+    border-color: rgba(244, 114, 182, 0.2);
+}
+
+/* Completed level - green background */
+.level-card.completed {
+    background: linear-gradient(135deg, #2d5f3f 0%, #1e4a2d 100%);
+    border-color: rgba(134, 239, 172, 0.5);
+}
+
+.level-card.completed:hover {
+    background: linear-gradient(135deg, #347a4a 0%, #255534 100%);
+    border-color: rgba(134, 239, 172, 0.7);
+}
+
+.level-card.completed::after {
+    content: '✓';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    color: rgba(134, 239, 172, 0.9);
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.level-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.level-number {
+    font-size: 1rem;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+}
+
+.level-difficulty {
+    font-size: 1.2rem;
+    color: #ffd700;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.level-card-body {
+    position: relative;
+    z-index: 1;
+}
+
+.level-name {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin: 0 0 0.5rem 0;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.level-description {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0.5rem 0;
+    line-height: 1.4;
+}
+
+.level-circles-count {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    #levels-panel {
+        padding: 5rem 1rem 1rem 1rem; /* Maintain top padding on mobile */
+    }
+
+    .levels-panel-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .levels-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .level-card {
+        padding: 1rem;
+    }
+
+    .level-name {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #levels-panel {
+        padding: 4rem 1rem 1rem 1rem; /* Slightly less on very small screens */
+    }
+
+    .levels-grid {
+        grid-template-columns: 1fr;
+    }
+}

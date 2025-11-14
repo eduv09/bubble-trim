@@ -4,6 +4,7 @@ import { IArc, ICircle, ILine } from './types.js';
 import { intersectTwoCircles, joinIntersections, lineIntersectsArc } from '../utils/mathUtils.js';
 import { SoundManager } from '../sound/SoundManager.js';
 import { AnimationManager } from '../animations/AnimationManager.js';
+import { ProgressCard } from '../ui/ProgressCard.js';
 
 export class Board {
     p: p5;
@@ -12,7 +13,7 @@ export class Board {
     totalCuts: number = 0;
     animationManager: AnimationManager;
     soundManager: SoundManager;
-
+    missedCuts: number = 0;
 
     constructor(p: p5, circlesData: ICircle[], soundManager?: SoundManager) {
         this.p = p;
@@ -52,10 +53,17 @@ export class Board {
         return this.intersections.length === 0;
     }
 
-    checkLoss(line: ILine): boolean {
+    checkLoss(line: ILine, progressCard: ProgressCard): boolean {
         for (const circle of this.circles) {
             if (circle.intersect(line)) {
-                return true;
+                progressCard.loseLife();
+
+                this.soundManager.playPenaltySound();
+                this.missedCuts++;
+                if (this.missedCuts >= 3) {
+                    return true;
+                }
+                break;
             }
         }
         return false;

@@ -1,0 +1,156 @@
+/**
+ * Progress Card Styles
+ * Displays lives, timer, and progress percentage during gameplay
+ */
+
+#progress-card {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 12px 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-card-content {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+/* Lives Section */
+.lives-section {
+    display: flex;
+    align-items: center;
+}
+
+.lives-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.life-icon {
+    font-size: 2rem;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.life-icon.life-full {
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+.life-icon.life-empty {
+    opacity: 0.4;
+    filter: grayscale(100%) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Shake animation when life is lost */
+.lives-container.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Stats Section */
+.stats-section {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    border-left: 2px solid rgba(255, 255, 255, 0.2);
+    padding-left: 20px;
+}
+
+.timer-display,
+.progress-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-icon {
+    font-size: 1.2rem;
+}
+
+.stat-value {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #fff;
+    min-width: 60px;
+    text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    #progress-card {
+        top: 10px;
+        padding: 10px 16px;
+    }
+
+    .progress-card-content {
+        gap: 16px;
+    }
+
+    .life-icon {
+        font-size: 1.5rem;
+    }
+
+    .stats-section {
+        gap: 12px;
+        padding-left: 12px;
+    }
+
+    .stat-value {
+        font-size: 0.95rem;
+        min-width: 50px;
+    }
+
+    .stat-icon {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #progress-card {
+        padding: 8px 12px;
+    }
+
+    .progress-card-content {
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .stats-section {
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        padding-left: 0;
+        padding-top: 8px;
+        width: 100%;
+        justify-content: space-around;
+    }
+
+    .life-icon {
+        font-size: 1.3rem;
+    }
+
+    .stat-value {
+        font-size: 0.85rem;
+    }
+}

@@ -1,4 +1,4 @@
-import { GameStats } from '../game/StatsCollector.js';
+import { IGameStats } from '../game/StatsCollector.js';
 
 /**
  * UIManager - Handles all UI elements like buttons, panels, and progress display
@@ -42,10 +42,11 @@ export class UIManager {
     /**
      * Updates the result panel with title, stats, and styling
      */
-    private static updateResultPanel({ title, stats = '', style = {} }: {
+    private static updateResultPanel({ title, stats = '', style = {}, result }: {
         title: string;
         stats?: string;
-        style?: any
+        style?: any;
+        result?: 'victory' | 'loss';
     }): void {
         const panel = document.getElementById('result-panel');
         if (!panel) return;
@@ -56,6 +57,11 @@ export class UIManager {
         if (titleElem) titleElem.textContent = title;
         if (statsElem) statsElem.innerHTML = stats ?? '';
 
+        // Set data-result attribute for CSS styling
+        if (result) {
+            panel.setAttribute('data-result', result);
+        }
+
         if (style && typeof style === 'object') {
             Object.keys(style).forEach((key) => {
                 (panel as HTMLElement).style.setProperty(key, style[key]);
@@ -64,11 +70,11 @@ export class UIManager {
     }
 
     /**
-     * Formats GameStats into an HTML string for display
+     * Formats IGameStats into an HTML string for display
      * @param stats - The game statistics
      * @returns Formatted HTML string
      */
-    private static formatStats(stats: GameStats): string {
+    private static formatStats(stats: IGameStats): string {
         const lines = [];
 
         // Duration
@@ -101,9 +107,9 @@ export class UIManager {
 
     /**
      * Shows the victory panel
-     * @param stats - Optional stats to display (can be GameStats or string)
+     * @param stats - Optional stats to display (can be IGameStats or string)
      */
-    static showVictoryPanel(stats?: GameStats | string): void {
+    static showVictoryPanel(stats?: IGameStats | string): void {
         const statsHtml = typeof stats === 'string'
             ? stats
             : stats
@@ -113,16 +119,17 @@ export class UIManager {
         UIManager.updateResultPanel({
             title: 'Victory!',
             stats: statsHtml,
-            style: { background: '#2ecc40' },
+            result: 'victory',
+            style: {},
         });
         UIManager.showPanel('result-panel');
     }
 
     /**
      * Shows the loss panel
-     * @param stats - Optional stats to display (can be GameStats or string)
+     * @param stats - Optional stats to display (can be IGameStats or string)
      */
-    static showLossPanel(stats?: GameStats | string): void {
+    static showLossPanel(stats?: IGameStats | string): void {
         const statsHtml = typeof stats === 'string'
             ? stats
             : stats
@@ -132,7 +139,8 @@ export class UIManager {
         UIManager.updateResultPanel({
             title: 'Game Over',
             stats: statsHtml,
-            style: { background: '#e74c3c' },
+            result: 'loss',
+            style: {},
         });
         UIManager.showPanel('result-panel');
     }
@@ -140,9 +148,9 @@ export class UIManager {
     /**
      * Shows the result panel (victory or loss)
      * @param isVictory - Whether this is a victory or loss
-     * @param stats - Optional stats to display (can be GameStats or string)
+     * @param stats - Optional stats to display (can be IGameStats or string)
      */
-    static showResultPanel(isVictory = true, stats?: GameStats | string): void {
+    static showResultPanel(isVictory = true, stats?: IGameStats | string): void {
         if (isVictory) {
             UIManager.showVictoryPanel(stats);
         } else {
@@ -166,5 +174,19 @@ export class UIManager {
     static hidePanel(panelId: string): void {
         const panel = document.getElementById(panelId);
         if (panel) panel.style.display = 'none';
+    }
+
+    /**
+     * Shows the levels panel
+     */
+    static showLevelsPanel(): void {
+        UIManager.showPanel('levels-panel');
+    }
+
+    /**
+     * Hides the levels panel
+     */
+    static hideLevelsPanel(): void {
+        UIManager.hidePanel('levels-panel');
     }
 }

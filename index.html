@@ -8,10 +8,22 @@
     <link rel="stylesheet" href="style/main.css" />
   </head>
   <body>
-    <div id="map-controls">
+    <div id="map-controls" style="display: none;">
       <!-- Extra buttons will be added programmatically -->
     </div>
-    <div id="progress-container">
+    <button id="levels-menu-btn" class="levels-menu-button hidden">
+      📋 Levels
+    </button>
+    <div id="countdown-overlay">
+      <div id="countdown-number">3</div>
+    </div>
+    <div id="levels-panel">
+      <!-- Levels panel will be populated by LevelsPanel.ts -->
+    </div>
+    <div id="progress-card">
+      <!-- Progress card will be populated by ProgressCard.ts -->
+    </div>
+    <div id="progress-container" style="display: none;">
       Progress: <span id="progress-value">0%</span>
     </div>
     <div id="zoom-controls">
@@ -22,11 +34,11 @@
     <div id="pan-controls">
       <label for="left-pan-toggle">
         <input type="checkbox" id="left-pan-toggle" />
-        Left-Click Pan
+        Modo do Tiaguinho
       </label>
       <div id="pan-factor-container">
         <label for="pan-factor-slider">
-          Pan Speed: <span id="pan-factor-value">50%</span>
+          Quantidade de arrasto: <span id="pan-factor-value">50%</span>
         </label>
         <input
           type="range"
@@ -45,6 +57,7 @@
       </div>
       <div class="button-container">
         <button id="restart-btn">Restart</button>
+        <button id="next-level-btn">Next Level</button>
         <button id="level-btn">Pick Level</button>
       </div>
       </div>
