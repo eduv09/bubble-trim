@@ -251,4 +251,12 @@ export class LevelsPanel {
     isVisible(): boolean {
         return this.container.style.display !== 'none';
     }
+
+    /**
+     * Refresh the levels panel to update completion status
+     * Call this after game data is loaded
+     */
+    refresh(): void {
+        this.renderLevels();
+    }
 }

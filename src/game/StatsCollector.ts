@@ -1,6 +1,7 @@
 import { Board } from './Board.js';
 import { GameDataManager } from './game-data/GameData.js';
 import { PlayerIdentity } from './PlayerIdentity.js';
+import { FirestoreService } from '../data/FirestoreService.js';
 
 export interface IGameStats {
     playerName: string;
@@ -19,7 +20,7 @@ export class StatsCollector {
     protected stats: IGameStats;
     protected gameDataManager: GameDataManager;
 
-    constructor(boardName?: string) {
+    constructor(boardName?: string, firestoreService?: FirestoreService) {
         this.stats = {
             playerName: PlayerIdentity.getPlayerName(),
             startTime: Date.now(),
@@ -29,7 +30,14 @@ export class StatsCollector {
             successfulIntersections: 0,
             boardName,
         };
-        this.gameDataManager = new GameDataManager(this.stats.playerName);
+
+        // Create GameDataManager with FirestoreService if provided
+        if (firestoreService) {
+            this.gameDataManager = new GameDataManager(this.stats.playerName, firestoreService);
+        } else {
+            // Fallback for cases where FirestoreService is not available (shouldn't happen in normal flow)
+            throw new Error('FirestoreService is required for StatsCollector');
+        }
     }
 
     /**

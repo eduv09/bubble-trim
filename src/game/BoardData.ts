@@ -1,5 +1,51 @@
 import { ICircle } from "./types.js";
 
+// Simple seeded RNG utilities (Mulberry32)
+let globalRng: (() => number) | null = null;
+
+function seedFromNumber(n: number): number {
+    // Ensure 32-bit unsigned
+    return n >>> 0;
+}
+
+function hashStringToUint32(str: string): number {
+    // FNV-1a 32-bit hash
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h >>> 0;
+}
+
+function createRngFromSeed(seed: number | string): () => number {
+    let s = typeof seed === 'number' ? seedFromNumber(seed) : hashStringToUint32(seed);
+    // Mulberry32
+    return function () {
+        s |= 0;
+        s = (s + 0x6D2B79F5) | 0;
+        let t = Math.imul(s ^ (s >>> 15), 1 | s);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
+/**
+ * Set a global RNG seed to make subsequent level generation deterministic.
+ * If not set, generateLevel will fall back to Math.random.
+ */
+export function setRandomSeed(seed: number | string | null): void {
+    if (seed === null || typeof seed === 'undefined') {
+        globalRng = null;
+    } else {
+        globalRng = createRngFromSeed(seed);
+    }
+}
+
+export function resetRandomSeed(): void {
+    globalRng = null;
+}
+
 export interface IBoardData extends Array<ICircle> {
     name?: string;
 }
@@ -66,7 +112,8 @@ export const generateLevel = (
     height: number,
     minRadius: number = 20,
     maxRadius: number = 100,
-    name?: string
+    name?: string,
+    seed?: number | string
 ): IBoardData => {
     const boardArea = width * height;
 
@@ -87,11 +134,20 @@ export const generateLevel = (
     const y0 = -height / 2;
     let attempts = 0;
 
+    // Choose RNG: per-call seed > global seeded RNG > Math.random
+    const rng = (() => {
+        if (typeof seed !== 'undefined' && seed !== null) {
+            return createRngFromSeed(seed);
+        }
+        if (globalRng) return globalRng;
+        return Math.random;
+    })();
+
     while (circles.length < circleCount && attempts < circleCount * 20) {
         attempts++;
-        const r = minRadius + Math.random() * (maxRadius - minRadius);
-        const x = x0 + r + Math.random() * (width - 2 * r);
-        const y = y0 + r + Math.random() * (height - 2 * r);
+        const r = minRadius + rng() * (maxRadius - minRadius);
+        const x = x0 + r + rng() * (width - 2 * r);
+        const y = y0 + r + rng() * (height - 2 * r);
 
         let contained = false;
         for (const c of circles) {

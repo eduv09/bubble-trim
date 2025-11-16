@@ -10,6 +10,7 @@ export class AuthManager {
     private isAuthenticated: boolean = false;
     private currentUser: string | null = null;
     private isGuest: boolean = false;
+    private authToken: string | null = null;
 
     constructor(authProvider: AuthProvider) {
         this.authProvider = authProvider;
@@ -35,6 +36,7 @@ export class AuthManager {
             this.isAuthenticated = true;
             this.currentUser = result.userId;
             this.isGuest = result.isGuest;
+            this.authToken = result.authToken || null;
             PlayerIdentity.setUserId(result.userId);
         }
 
@@ -52,6 +54,7 @@ export class AuthManager {
             this.isAuthenticated = true;
             this.currentUser = result.userId;
             this.isGuest = true;
+            this.authToken = result.authToken || null;
             PlayerIdentity.setUserId(result.userId);
         }
 
@@ -66,6 +69,7 @@ export class AuthManager {
         this.isAuthenticated = false;
         this.currentUser = null;
         this.isGuest = false;
+        this.authToken = null;
         PlayerIdentity.clearUserId();
     }
 
@@ -91,5 +95,13 @@ export class AuthManager {
      */
     getIsGuest(): boolean {
         return this.isGuest;
+    }
+
+    /**
+     * Gets the current user's authentication token
+     * @returns The auth token or null if not authenticated
+     */
+    getAuthToken(): string | null {
+        return this.authToken;
     }
 }

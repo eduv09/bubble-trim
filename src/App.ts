@@ -16,9 +16,12 @@ import { PlayerCard } from './ui/PlayerCard.js';
 import { ProgressCard } from './ui/ProgressCard.js';
 import { Countdown } from './ui/Countdown.js';
 import { AuthManager } from './auth/AuthManager.js';
-import { SimpleAuthProvider } from './auth/SimpleAuthProvider.js';
+import { FirebaseAuthProvider } from './auth/FirebaseAuthProvider.js';
 import { LoginScreen } from './auth/LoginScreen.js';
 import { LevelsPanel, Level } from './ui/LevelsPanel.js';
+import { LoadingScreen } from './ui/LoadingScreen.js';
+import { FirestoreService } from './data/FirestoreService.js';
+import { NotificationManager } from './ui/NotificationManager.js';
 
 const sketch = (p: p5) => {
     let camera: CameraController;
@@ -27,10 +30,12 @@ const sketch = (p: p5) => {
     let soundManager: SoundManager;
     let authManager: AuthManager;
     let loginScreen: LoginScreen;
+    let loadingScreen: LoadingScreen;
     let playerCard: PlayerCard;
     let progressCard: ProgressCard;
     let countdown: Countdown;
     let levelsPanel: LevelsPanel;
+    let firestoreService: FirestoreService;
     let isGameInitialized = false;
     const backgroundImage = p.loadImage('../assets/background.png');
 
@@ -39,19 +44,62 @@ const sketch = (p: p5) => {
         p.createCanvas(p.windowWidth, p.windowHeight);
         p.background(backgroundImage);
 
-        // Initialize authentication system
-        const authProvider = new SimpleAuthProvider();
+        // Initialize Firestore service
+        firestoreService = new FirestoreService();
+
+        // Initialize authentication system with Firebase
+        const authProvider = new FirebaseAuthProvider();
         authManager = new AuthManager(authProvider);
 
+        // Initialize loading screen
+        loadingScreen = new LoadingScreen();
+
         // Show login screen first
-        loginScreen = new LoginScreen(authManager, () => {
+        loginScreen = new LoginScreen(authManager, async () => {
             // This callback is called after successful login
-            initializeGame();
+            await loadGameDataAndInitialize();
         });
         loginScreen.show();
     };
 
-    const initializeGame = () => {
+    const loadGameDataAndInitialize = async () => {
+        // Hide login screen
+        loginScreen.hide();
+
+        // Show loading screen
+        loadingScreen.show('Loading your game data...');
+
+        // Small delay for UI update
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        try {
+            // Initialize game first (so GameDataManager exists)
+            await initializeGame();
+
+            // Load game data
+            const gameDataManager = gameState.statsCollector.getGameDataManager();
+
+            // Setup notification callback for upload failures
+            const notificationManager = NotificationManager.getInstance();
+            gameDataManager.setOnUploadFailedCallback((message: string) => {
+                notificationManager.showOfflineMessage(message);
+            });
+
+            await gameDataManager.loadData();
+
+            // Setup levels panel
+            setupLevelsPanel();
+
+            // Hide loading screen
+            loadingScreen.hide();
+        } catch (error) {
+            console.error('Error loading game data:', error);
+            // Continue even if data loading fails
+            loadingScreen.hide();
+        }
+    };
+
+    const initializeGame = async () => {
         if (isGameInitialized) return;
 
         // Initialize core systems
@@ -62,16 +110,16 @@ const sketch = (p: p5) => {
         progressCard = new ProgressCard();
         countdown = new Countdown();
 
-        // Initialize game state with progress card and countdown
-        gameState = new GameState(p, classicVen, soundManager, camera, progressCard, countdown);
+        // Initialize game state with progress card and countdown (passing firestoreService)
+        gameState = new GameState(p, classicVen, soundManager, camera, progressCard, countdown, firestoreService);
         inputHandler = new InputHandler(p, gameState, camera);
 
         // Initialize and show player card
-        playerCard = new PlayerCard();
+        playerCard = new PlayerCard(authManager);
         playerCard.show();
 
         // Setup levels panel
-        setupLevelsPanel();
+        //setupLevelsPanel();
 
         // Setup UI controls
         setupUIControls();
@@ -147,7 +195,7 @@ const sketch = (p: p5) => {
                 id: 'level-1',
                 name: 'Challenge 1',
                 difficulty: 2,
-                boardData: generateLevel(700, 350, 20, 100, 'Challenge 1'),
+                boardData: generateLevel(700, 350, 20, 100, 'Challenge 1', 12345),
                 boardName: 'Challenge 1',
                 description: 'Randomly generated level - easy difficulty'
             },
@@ -155,7 +203,7 @@ const sketch = (p: p5) => {
                 id: 'level-2',
                 name: 'Challenge 2',
                 difficulty: 3,
-                boardData: generateLevel(1400, 700, 20, 100, 'Challenge 2'),
+                boardData: generateLevel(1400, 700, 20, 100, 'Challenge 2', 67890),
                 boardName: 'Challenge 2',
                 description: 'Randomly generated level - medium difficulty'
             },
@@ -163,7 +211,7 @@ const sketch = (p: p5) => {
                 id: 'level-3',
                 name: 'Challenge 3',
                 difficulty: 4,
-                boardData: generateLevel(2800, 1400, 20, 100, 'Challenge 3'),
+                boardData: generateLevel(2800, 1400, 20, 100, 'Challenge 3', 24680),
                 boardName: 'Challenge 3',
                 description: 'Randomly generated level - hard difficulty'
             },
@@ -171,7 +219,7 @@ const sketch = (p: p5) => {
                 id: 'level-4',
                 name: 'Challenge 4',
                 difficulty: 4,
-                boardData: generateLevel(3200, 1600, 20, 100, 'Challenge 4'),
+                boardData: generateLevel(3200, 1600, 20, 100, 'Challenge 4', 13579),
                 boardName: 'Challenge 4',
                 description: 'Randomly generated level - hard difficulty'
             },
@@ -179,7 +227,7 @@ const sketch = (p: p5) => {
                 id: 'level-5',
                 name: 'Challenge 5',
                 difficulty: 5,
-                boardData: generateLevel(4000, 2000, 20, 100, 'Challenge 5'),
+                boardData: generateLevel(4000, 2000, 20, 100, 'Challenge 5', 98765),
                 boardName: 'Challenge 5',
                 description: 'Randomly generated level - expert difficulty'
             }

@@ -18,6 +18,12 @@
 /* Login screen */
 @import url('login.css');
 
+/* Loading screen */
+@import url('loading.css');
+
+/* Notification system */
+@import url('notification.css');
+
 /* Player card component */
 @import url('player-card.css');
 

@@ -5,6 +5,7 @@ export interface AuthResult {
     success: boolean;
     userId: string;
     isGuest: boolean;
+    authToken?: string;  // Firebase authentication token for database access
     error?: string;
 }
 

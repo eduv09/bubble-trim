@@ -125,3 +125,21 @@
     font-size: 0.85rem;
     margin-top: 16px;
 }
+
+.login-switch {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 16px 0;
+}
+
+.login-switch a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.login-switch a:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}

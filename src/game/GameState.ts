@@ -6,6 +6,7 @@ import { UIManager } from '../ui/UIManager.js';
 import { StatsCollector } from './StatsCollector.js';
 import { ProgressCard } from '../ui/ProgressCard.js';
 import { Countdown } from '../ui/Countdown.js';
+import { FirestoreService } from '../data/FirestoreService.js';
 
 /**
  * GameState - Manages the game state including board, playing status, and hunting mode
@@ -24,7 +25,7 @@ export class GameState {
     public countdown: Countdown;
     public isCountingDown: boolean = false;
 
-    constructor(p: p5, initialBoard: any, soundManager: SoundManager, camera: CameraController, progressCard: ProgressCard, countdown: Countdown) {
+    constructor(p: p5, initialBoard: any, soundManager: SoundManager, camera: CameraController, progressCard: ProgressCard, countdown: Countdown, firestoreService: FirestoreService) {
         this.p = p;
         this.soundManager = soundManager;
         this.camera = camera;
@@ -32,7 +33,7 @@ export class GameState {
         this.countdown = countdown;
         this.activeBoard = new Board(p, initialBoard, soundManager);
         this.lastBoard = initialBoard;
-        this.statsCollector = new StatsCollector();
+        this.statsCollector = new StatsCollector(undefined, firestoreService);
     }
 
     /**

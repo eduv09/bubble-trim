@@ -1,4 +1,5 @@
 import { PlayerIdentity } from '../game/PlayerIdentity.js';
+import { AuthManager } from '../auth/AuthManager.js';
 
 /**
  * PlayerCard - Displays player information and stats in an expandable card
@@ -6,8 +7,10 @@ import { PlayerIdentity } from '../game/PlayerIdentity.js';
 export class PlayerCard {
     private cardElement: HTMLElement | null = null;
     private isExpanded: boolean = false;
+    private authManager: AuthManager;
 
-    constructor() {
+    constructor(authManager: AuthManager) {
+        this.authManager = authManager;
         this.createCard();
     }
 
@@ -47,6 +50,9 @@ export class PlayerCard {
                             <!-- Stats will be populated here in the future -->
                             <p class="stats-placeholder">More stats coming soon!</p>
                         </div>
+                        <div class="player-actions">
+                            <button id="logout-btn" class="btn-logout">Logout</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -68,6 +74,31 @@ export class PlayerCard {
         compactSection?.addEventListener('click', () => {
             this.toggleExpanded();
         });
+
+        // Logout button
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn?.addEventListener('click', async (e) => {
+            e.stopPropagation(); // Prevent card collapse
+            await this.handleLogout();
+        });
+    }
+
+    /**
+     * Handles logout and page refresh
+     */
+    private async handleLogout(): Promise<void> {
+        try {
+            // Logout from Firebase
+            await this.authManager.logout();
+
+            // Force a hard refresh of the page (like Ctrl+F5)
+            // This clears all JavaScript state and reloads everything
+            window.location.reload();
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Still reload even if logout fails
+            window.location.reload();
+        }
     }
 
     /**

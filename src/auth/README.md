@@ -13,33 +13,62 @@ The authentication system is designed with extensibility in mind, using the Stra
    - Defines the contract for authentication methods
    - Methods: `authenticate()`, `authenticateAsGuest()`, `validateCredentials()`, `logout()`
 
-2. **SimpleAuthProvider** (Concrete)
+2. **FirebaseAuthProvider** (Concrete) ⭐ **CURRENT**
+   - Firebase Authentication integration
+   - Email/password authentication with auto-registration
+   - Anonymous authentication for guest users
+   - Provides Firebase auth tokens for database access
+   - Comprehensive error handling with user-friendly messages
+
+3. **SimpleAuthProvider** (Concrete)
    - Basic username-only authentication
    - No password required
-   - Validates username length (2-20 characters)
+   - Validates username length (5-20 characters)
    - Sanitizes usernames (removes special characters)
 
-3. **AuthManager**
+4. **AuthManager**
    - Facade for the authentication system
    - Manages authentication state
+   - Stores Firebase auth tokens for database operations
    - Coordinates between AuthProvider and PlayerIdentity
    - Can switch between different providers
 
-4. **LoginScreen**
+5. **LoginScreen**
    - UI component for login interface
    - Handles user interactions
-   - Shows login form with username input
-   - Provides "Continue as Guest" option
+   - Shows login form with email and password inputs
+   - Provides "Continue as Guest" option (anonymous auth)
 
 ## Current Implementation
 
-The default setup uses `SimpleAuthProvider` which requires only a username:
+The system now uses **Firebase Authentication** via `FirebaseAuthProvider`:
 
 ```typescript
-const authProvider = new SimpleAuthProvider();
+const authProvider = new FirebaseAuthProvider();
 const authManager = new AuthManager(authProvider);
 const loginScreen = new LoginScreen(authManager, onLoginSuccess);
 loginScreen.show();
+```
+
+### Firebase Authentication Features
+
+- **Email/Password Login**: Users can register and log in with email/password
+- **Auto-Registration**: If user doesn't exist, automatically creates new account
+- **Anonymous Authentication**: Guest users get Firebase anonymous auth
+- **Auth Tokens**: Each login provides a Firebase ID token for database access
+- **Token Management**: Tokens are stored in `AuthManager` and available via `getAuthToken()`
+
+### Accessing Auth Tokens
+
+```typescript
+// Get the current user's auth token for database operations
+const token = authManager.getAuthToken();
+
+// Use token for authenticated database writes
+if (token) {
+    // Include token in database requests
+    await saveUserData(userId, data, token);
+}
 ```
 
 ## Extending the System
@@ -123,10 +152,12 @@ export class CustomLoginScreen extends LoginScreen {
 
 ## Features
 
-- ✅ Username-only login
-- ✅ Guest mode with auto-generated names
-- ✅ Input validation
-- ✅ Error handling
+- ✅ Email/password authentication with Firebase
+- ✅ Anonymous authentication for guest users
+- ✅ Automatic user registration
+- ✅ Firebase auth token management
+- ✅ Input validation (email format, password length)
+- ✅ Comprehensive error handling
 - ✅ Modular architecture for easy extension
 - ✅ Integration with PlayerIdentity system
 - ✅ Beautiful gradient UI
@@ -135,9 +166,8 @@ export class CustomLoginScreen extends LoginScreen {
 
 Potential additions:
 - OAuth providers (Google, GitHub, etc.)
-- Email/Password authentication
-- JWT token management
 - Session persistence (localStorage/cookies)
 - Multi-factor authentication
 - Social login integration
 - Password recovery flow
+- Email verification
