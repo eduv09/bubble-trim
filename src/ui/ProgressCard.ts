@@ -6,6 +6,7 @@ export class ProgressCard {
     private livesContainer: HTMLElement;
     private timerElement: HTMLElement;
     private progressElement: HTMLElement;
+    private onHintCallback?: () => void;
     private maxLives: number = 3;
     private currentLives: number = 3;
     private startTime: number = 0;
@@ -21,6 +22,14 @@ export class ProgressCard {
         this.livesContainer = document.getElementById('lives-container')!;
         this.timerElement = document.getElementById('timer-value')!;
         this.progressElement = document.getElementById('progress-percentage')!;
+    }
+
+    /**
+     * Register a callback that will be called when the hint button is pressed.
+     * The game-level logic (GameState) should handle consuming a life and recording the hint.
+     */
+    setOnHintCallback(callback: () => void): void {
+        this.onHintCallback = callback;
     }
 
     /**
@@ -42,8 +51,31 @@ export class ProgressCard {
                         <span id="progress-percentage" class="stat-value">0%</span>
                     </div>
                 </div>
+                <button id="hint-button" class="hint-button">💡 Hint</button>
             </div>
         `;
+
+        // Setup hint button event listener
+        const hintButton = document.getElementById('hint-button')!;
+        hintButton.addEventListener('click', () => this.onHintClick());
+    }
+
+    /**
+     * Handle hint button click
+     */
+    private onHintClick(): void {
+        // Prefer delegating hint handling to the game-level via callback so the
+        // board, stats collector and UI remain in sync. If no callback is set,
+        // fall back to consuming a life locally for backward compatibility.
+        if (this.onHintCallback) {
+            this.onHintCallback();
+        } else {
+            if (this.currentLives > 0) {
+                this.loseLife();
+                // TODO: Implement hint logic
+                console.log('Hint requested (local fallback)! Lives remaining:', this.currentLives);
+            }
+        }
     }
 
     /**

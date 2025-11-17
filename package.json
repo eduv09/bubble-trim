@@ -6,7 +6,8 @@
         "start": "parcel index.html",
         "host": "python3 -m http.server 8000",
         "build": "parcel build index.html",
-        "compile": "tsc"
+        "compile": "tsc",
+        "update-stats": "npx ts-node src/admin/updateStats.ts"
     },
     "author": "Eduardo Vasques (eduv09)",
     "license": "MIT",
@@ -23,6 +24,7 @@
     },
     "dependencies": {
         "firebase": "^12.6.0",
+        "firebase-admin": "^13.6.0",
         "p5": "^1.9.0"
     }
 }

@@ -34,6 +34,8 @@ export class GameState {
         this.activeBoard = new Board(p, initialBoard, soundManager);
         this.lastBoard = initialBoard;
         this.statsCollector = new StatsCollector(undefined, firestoreService);
+        // Wire hint button to game-level handler so hint usage updates board and stats
+        this.progressCard.setOnHintCallback(() => this.handleHintPress());
     }
 
     /**
@@ -115,8 +117,11 @@ export class GameState {
      * @returns true if loss condition is met
      */
     checkLoss(line: any): boolean {
-        if (this.activeBoard.checkLoss(line, this.progressCard) && this.isPlaying) {
+        if (!this.isPlaying) return false;
 
+        const result = this.activeBoard.checkLoss(line);
+
+        if (result === 2) {
             // Game over - all lives lost
             this.isPlaying = false;
             this.soundManager.playLoseSound();
@@ -130,7 +135,13 @@ export class GameState {
             const progress = this.activeBoard.getProgress();
             UIManager.showResultPanel(false, `You popped a circle!<br>Progress: ${progress}%`);
             return true;
+        } else if (result === 1) {
+            // Life lost — update UI and stats (counts as a hint)
+            this.progressCard.loseLife();
+            this.statsCollector.recordHintUsed();
+            return false;
         }
+
         return false;
     }
 
@@ -150,6 +161,34 @@ export class GameState {
      */
     recordHintUsed(): void {
         this.statsCollector.recordHintUsed();
+    }
+
+    /**
+     * Handle hint button press from the UI.
+     * Consumes a life in the UI, updates board state and stats, and triggers game over if needed.
+     */
+    private handleHintPress(): void {
+        // First, tell the board a hint was used so it can count toward game over
+        const causesGameOver = this.activeBoard.recordHintUsed();
+
+        // Update UI
+        this.progressCard.loseLife();
+
+        // Update stats
+        this.statsCollector.recordHintUsed();
+
+        if (causesGameOver && this.isPlaying) {
+            // Game over due to hints
+            this.isPlaying = false;
+            this.soundManager.playLoseSound();
+            this.progressCard.stopTimer();
+            this.progressCard.hide();
+
+            this.statsCollector.endGame(this.activeBoard);
+
+            const progress = this.activeBoard.getProgress();
+            UIManager.showResultPanel(false, `Game over — no lives left<br>Progress: ${progress}%`);
+        }
     }
 
     /**

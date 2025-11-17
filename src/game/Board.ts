@@ -4,7 +4,6 @@ import { IArc, ICircle, ILine } from './types.js';
 import { intersectTwoCircles, joinIntersections, lineIntersectsArc } from '../utils/mathUtils.js';
 import { SoundManager } from '../sound/SoundManager.js';
 import { AnimationManager } from '../animations/AnimationManager.js';
-import { ProgressCard } from '../ui/ProgressCard.js';
 
 export class Board {
     p: p5;
@@ -14,6 +13,9 @@ export class Board {
     animationManager: AnimationManager;
     soundManager: SoundManager;
     missedCuts: number = 0;
+    // Number of lives consumed via hints. Hints count toward game-over like missed cuts.
+    hintsUsed: number = 0;
+    hintedCircles: Circle[] = [];
 
     constructor(p: p5, circlesData: ICircle[], soundManager?: SoundManager) {
         this.p = p;
@@ -53,20 +55,38 @@ export class Board {
         return this.intersections.length === 0;
     }
 
-    checkLoss(line: ILine, progressCard: ProgressCard): boolean {
+    /**
+     * Check if a wrong cut occurred. Returns:
+     * 0 = no hit
+     * 1 = life lost (not game over)
+     * 2 = game over
+     */
+    checkLoss(line: ILine): number {
         for (const circle of this.circles) {
             if (circle.intersect(line)) {
-                progressCard.loseLife();
-
                 this.soundManager.playPenaltySound();
                 this.missedCuts++;
-                if (this.missedCuts >= 3) {
-                    return true;
+                // Check combined misses (missedCuts + hintsUsed) for game over
+                if (this.missedCuts + this.hintsUsed >= 3) {
+                    return 2;
                 }
-                break;
+                return 1;
             }
         }
-        return false;
+        return 0;
+    }
+
+    /**
+     * Record that a hint was used. Hints count toward the same life budget as missed cuts.
+     * Returns true if this causes game over.
+     */
+    recordHintUsed(): boolean {
+        this.hintsUsed++;
+        const intersection = this.intersections[Math.floor(Math.random() * this.intersections.length)];
+        this.hintedCircles.push(intersection.circle as Circle);
+        console.log("Hint used on circle at ", intersection.circle.center);
+        console.log(this.hintedCircles);
+        return (this.missedCuts + this.hintsUsed) >= 3;
     }
 
     getProgress(): string {
@@ -98,11 +118,24 @@ export class Board {
             return true;
         });
 
+        // Update hintedCircles to only include circles that still have intersections
+        if (this.hintedCircles.length > 0) {
+            const circlesWithIntersections = new Set(
+                this.intersections.map(intersection => intersection.circle)
+            );
+            this.hintedCircles = this.hintedCircles.filter(circle =>
+                circlesWithIntersections.has(circle)
+            );
+            console.log("Updated hintedCircles: ", this.hintedCircles);
+        }
+
         // Play sound if we hit something
         if (hitCount > 0) {
             console.log(`Hit ${hitCount} intersections!`);
             this.soundManager.playPopSound();
         }
+
+
         return hitCount;
     }
 
@@ -112,7 +145,11 @@ export class Board {
 
     draw(): void {
         for (const circle of this.circles) {
-            circle.draw();
+            if (this.hintedCircles.includes(circle)) {
+                circle.hintedDraw();
+            } else {
+                circle.draw();
+            }
         }
         this.animationManager.draw();
     }

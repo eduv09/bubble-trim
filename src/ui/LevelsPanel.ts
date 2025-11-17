@@ -25,6 +25,7 @@ export class LevelsPanel {
     private gameDataManager?: GameDataManager;
     private hasActiveGame: boolean = false;
     private onCloseCallback?: () => void;
+    private onHomeCallback?: () => void;
 
     constructor(onLevelSelect: (level: Level) => void, gameDataManager?: GameDataManager) {
         this.onLevelSelect = onLevelSelect;
@@ -45,7 +46,10 @@ export class LevelsPanel {
         this.container.innerHTML = `
             <div class="levels-panel-header">
                 <h2>Select a Level</h2>
-                <button class="close-btn" id="levels-close-btn">×</button>
+                <div class="header-buttons">
+                    <button class="home-btn" id="levels-home-btn">🏠 Home</button>
+                    <button class="close-btn" id="levels-close-btn">×</button>
+                </div>
             </div>
             <div class="levels-grid" id="levels-grid"></div>
         `;
@@ -53,6 +57,10 @@ export class LevelsPanel {
         // Setup close button
         const closeBtn = document.getElementById('levels-close-btn');
         closeBtn?.addEventListener('click', () => this.handleClose());
+
+        // Setup home button
+        const homeBtn = document.getElementById('levels-home-btn');
+        homeBtn?.addEventListener('click', () => this.handleHome());
     }
 
     /**
@@ -158,6 +166,23 @@ export class LevelsPanel {
     }
 
     /**
+     * Set callback to be called when Home button is clicked
+     */
+    setOnHomeCallback(callback: () => void): void {
+        this.onHomeCallback = callback;
+    }
+
+    /**
+     * Handle Home button click - returns to landing page
+     */
+    private handleHome(): void {
+        this.hide();
+        if (this.onHomeCallback) {
+            this.onHomeCallback();
+        }
+    }
+
+    /**
      * Set whether there's an active game
      */
     setHasActiveGame(hasActiveGame: boolean): void {
@@ -250,13 +275,5 @@ export class LevelsPanel {
      */
     isVisible(): boolean {
         return this.container.style.display !== 'none';
-    }
-
-    /**
-     * Refresh the levels panel to update completion status
-     * Call this after game data is loaded
-     */
-    refresh(): void {
-        this.renderLevels();
     }
 }

@@ -21,11 +21,24 @@ export class Circle implements ICircle {
         ];
     }
 
+    public hintedDraw(): void {
+        this.p.push();
+        this.p.stroke(0, 255, 255); // Cyan color for hints
+        this.p.strokeWeight(2);
+        this.p.noFill();
+        for (const arc of this.arc) {
+            const c = arc.circle.center;
+            const r = arc.circle.radius;
+            this.p.arc(c.x, c.y, r * 2, r * 2, arc.startAngle, arc.endAngle);
+        }
+        this.p.pop();
+    }
+
+
     public draw(): void {
         this.p.push();
-        this.p.stroke(255);
-        this.p.strokeWeight(2.5);
-        this.p.color([255, 255, 255]);
+        this.p.stroke(255, 255, 255);
+        this.p.strokeWeight(2);
         this.p.noFill();
         for (const arc of this.arc) {
             const c = arc.circle.center;

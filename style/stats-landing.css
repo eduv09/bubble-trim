@@ -1,0 +1,342 @@
+/**
+ * Stats Landing Page styles
+ */
+
+.stats-landing-panel {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    z-index: 9998;
+    overflow-y: auto;
+    padding: 40px 20px;
+}
+
+.stats-landing-container {
+    width: 70%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.stats-header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+}
+
+.stats-main-title {
+    font-size: 4rem;
+    margin: 0 0 16px 0;
+    font-weight: bold;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.stats-subtitle {
+    font-size: 1.5rem;
+    margin: 0;
+    opacity: 0.95;
+}
+
+.btn-play {
+    display: block;
+    margin: 0 auto 60px;
+    padding: 20px 80px;
+    font-size: 2rem;
+    font-weight: bold;
+    background: white;
+    color: #667eea;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.btn-play:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.stats-content {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+    padding-bottom: 120px;
+}
+
+.stats-section {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    flex-direction: column;
+}
+
+.section-title {
+    font-size: 2rem;
+    margin: 0 0 32px 0;
+    color: #333;
+    text-align: center;
+    padding-bottom: 16px;
+    border-bottom: 3px solid #667eea;
+}
+
+/* Most Played Games */
+.most-played-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.most-played-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+
+.most-played-item:hover {
+    background: #e9ecef;
+    transform: translateX(8px);
+}
+
+.rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.game-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Leaderboard */
+.leaderboard-list {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+
+.leaderboard-item:hover {
+    background: #e9ecef;
+    transform: translateX(8px);
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.player-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.player-stats {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Game Statistics Grid */
+.game-stats-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.game-stat-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s;
+}
+
+.game-stat-card:hover {
+    background: #e9ecef;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.game-stat-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin: 0 0 16px 0;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 8px;
+}
+
+.game-stat-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+/* Best Scores Section */
+.best-scores-section {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px solid #e0e0e0;
+}
+
+.best-scores-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    margin: 0 0 12px 0;
+    text-align: center;
+}
+
+.best-scores-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.best-score-item {
+    display: grid;
+    grid-template-columns: 30px 1fr auto auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.best-score-item:hover {
+    background: #f0f0f0;
+    transform: translateX(4px);
+}
+
+.score-rank {
+    font-weight: bold;
+    color: #667eea;
+    font-size: 0.9rem;
+}
+
+.score-player {
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.score-time {
+    font-size: 0.85rem;
+    color: #666;
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+.score-hearts {
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.no-scores {
+    text-align: center;
+    color: #999;
+    font-size: 0.9rem;
+    padding: 12px;
+}
+
+/* Loading and Error States */
+.loading-text,
+.no-data,
+.error-text {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 1.1rem;
+}
+
+.error-text {
+    color: #e74c3c;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .stats-content {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-main-title {
+        font-size: 3rem;
+    }
+
+    .btn-play {
+        padding: 16px 60px;
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .stats-landing-panel {
+        padding: 20px 10px;
+    }
+
+    .stats-main-title {
+        font-size: 2.5rem;
+    }
+
+    .stats-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .game-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}

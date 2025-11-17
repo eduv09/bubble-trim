@@ -1,3 +1,4 @@
+import { Level } from "../ui/index.js";
 import { ICircle } from "./types.js";
 
 // Simple seeded RNG utilities (Mulberry32)
@@ -173,3 +174,224 @@ export const generateLevel = (
 
     return Object.assign(circles, name ? { name } : {});
 };
+
+
+export const loadedLevels: Level[] = [
+    /*{
+        id: 'classic-venn',
+        name: 'Classic Venn',
+        difficulty: 0,
+        boardData: classicVen,
+        boardName: 'Classic Venn',
+        description: 'Two overlapping circles - perfect for beginners'
+    },*/
+    {
+        id: 'three-overlap',
+        name: 'Three Overlap',
+        difficulty: 0,
+        boardData: threeCircleVenn,
+        boardName: 'Three Overlap',
+        description: 'Three circles with a central intersection'
+    },
+    {
+        id: 'planetary-system',
+        name: 'Planetary System',
+        difficulty: 0,
+        boardData: planetarySystem,
+        boardName: 'Planetary System',
+        description: 'A large circle with smaller orbiting circles'
+    },
+    {
+        id: 'caterpillar',
+        name: 'Caterpillar',
+        difficulty: 0,
+        boardData: caterpillarChain,
+        boardName: 'Caterpillar',
+        description: 'Chain of overlapping circles'
+    },
+    {
+        id: 'bubble-cluster',
+        name: 'Bubble Cluster',
+        difficulty: 0,
+        boardData: bubbleCluster,
+        boardName: 'Bubble Cluster',
+        description: 'Multiple circles in a cluster formation'
+    },
+    {
+        id: 'level-1',
+        name: 'Level Easy - 1',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 1', 12345),
+        boardName: 'Level Easy - 1',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-2',
+        name: 'Level Easy - 2',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 2', 12445),
+        boardName: 'Level Easy - 2',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-3',
+        name: 'Level Easy - 3',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 3', 12545),
+        boardName: 'Level Easy - 3',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-4',
+        name: 'Level Easy - 4',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 4', 12645),
+        boardName: 'Level Easy - 4',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-5',
+        name: 'Level Easy - 5',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 5', 12745),
+        boardName: 'Level Easy - 5',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-6',
+        name: 'Level Easy - 6',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 6', 12845),
+        boardName: 'Level Easy - 6',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-7',
+        name: 'Level Easy - 7',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 7', 12945),
+        boardName: 'Level Easy - 7',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-8',
+        name: 'Level Easy - 8',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 8', 12145),
+        boardName: 'Level Easy - 8',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-9',
+        name: 'Level Easy - 9',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 9', 12245),
+        boardName: 'Level Easy - 9',
+        description: 'Randomly generated level - easy difficulty'
+    },
+
+    // Medium difficulty levels
+    {
+        id: 'level-10',
+        name: 'Level Medium - 1',
+        difficulty: 2,
+        boardData: generateLevel(1400, 700, 20, 100, 'Level Medium - 1', 22345),
+        boardName: 'Level Medium - 1',
+        description: 'Randomly generated level - medium difficulty'
+    },
+    {
+        id: 'level-11',
+        name: 'Level Medium - 2',
+        difficulty: 2,
+        boardData: generateLevel(1400, 700, 20, 100, 'Level Medium - 2', 23345),
+        boardName: 'Level Medium - 2',
+        description: 'Randomly generated level - medium difficulty'
+    },
+    {
+        id: 'level-12',
+        name: 'Level Medium - 3',
+        difficulty: 2,
+        boardData: generateLevel(1400, 700, 20, 100, 'Level Medium - 3', 24345),
+        boardName: 'Level Medium - 3',
+        description: 'Randomly generated level - medium difficulty'
+    },
+    {
+        id: 'level-13',
+        name: 'Level Medium - 4',
+        difficulty: 2,
+        boardData: generateLevel(1400, 700, 20, 100, 'Level Medium - 4', 25345),
+        boardName: 'Level Medium - 4',
+        description: 'Randomly generated level - medium difficulty'
+    },
+    {
+        id: 'level-14',
+        name: 'Level Medium - 5',
+        difficulty: 2,
+        boardData: generateLevel(1400, 700, 20, 100, 'Level Medium - 5', 26345),
+        boardName: 'Level Medium - 5',
+        description: 'Randomly generated level - medium difficulty'
+    },
+
+    // Medium-Hard difficulty levels
+    {
+        id: 'level-15',
+        name: 'Level Medium-Hard - 1',
+        difficulty: 3,
+        boardData: generateLevel(2800, 1400, 20, 110, 'Level Medium-Hard - 1', 25680),
+        boardName: 'Level Medium-Hard - 1',
+        description: 'Randomly generated level - hard difficulty'
+    },
+    {
+        id: 'level-16',
+        name: 'Level Medium-Hard - 2',
+        difficulty: 3,
+        boardData: generateLevel(2800, 1400, 20, 110, 'Level Medium-Hard - 2', 26680),
+        boardName: 'Level Medium-Hard - 2',
+        description: 'Randomly generated level - hard difficulty'
+    },
+    {
+        id: 'level-17',
+        name: 'Level Medium-Hard - 3',
+        difficulty: 3,
+        boardData: generateLevel(2800, 1400, 20, 110, 'Level Medium-Hard - 3', 27680),
+        boardName: 'Level Medium-Hard - 3',
+        description: 'Randomly generated level - hard difficulty'
+    },
+
+
+    // Hard difficulty levels
+    {
+        id: 'level-18',
+        name: 'Level Hard - 1',
+        difficulty: 4,
+        boardData: generateLevel(3200, 1600, 20, 130, 'Level Hard - 1', 13579),
+        boardName: 'Level Hard - 1',
+        description: 'Randomly generated level - hard difficulty'
+    },
+    {
+        id: 'level-19',
+        name: 'Level Hard - 2',
+        difficulty: 4,
+        boardData: generateLevel(3200, 1600, 20, 130, 'Level Hard - 2', 14579),
+        boardName: 'Level Hard - 2',
+        description: 'Randomly generated level - hard difficulty'
+    },
+    {
+        id: 'level-20',
+        name: 'Level Hard - 3',
+        difficulty: 4,
+        boardData: generateLevel(3200, 1600, 20, 130, 'Level Hard - 3', 15579),
+        boardName: 'Level Hard - 3',
+        description: 'Randomly generated level - hard difficulty'
+    },
+
+    // Extreme difficulty levels
+    {
+        id: 'level-21',
+        name: 'Level Extreme - 1',
+        difficulty: 5,
+        boardData: generateLevel(4600, 2300, 20, 150, 'Level Extreme - 1', 98765),
+        boardName: 'Level Extreme - 1',
+        description: 'Randomly generated level - expert difficulty'
+    }
+];

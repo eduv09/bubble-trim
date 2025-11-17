@@ -1,11 +1,7 @@
 import type p5 from 'p5';
 import {
-    classicVen,
     threeCircleVenn,
-    planetarySystem,
-    caterpillarChain,
-    bubbleCluster,
-    generateLevel
+    loadedLevels
 } from './game/BoardData.js';
 import { SoundManager } from './sound/SoundManager.js';
 import { CameraController } from './camera/CameraController.js';
@@ -22,6 +18,7 @@ import { LevelsPanel, Level } from './ui/LevelsPanel.js';
 import { LoadingScreen } from './ui/LoadingScreen.js';
 import { FirestoreService } from './data/FirestoreService.js';
 import { NotificationManager } from './ui/NotificationManager.js';
+import { StatsLandingPage } from './ui/StatsLandingPage.js';
 
 const sketch = (p: p5) => {
     let camera: CameraController;
@@ -36,6 +33,7 @@ const sketch = (p: p5) => {
     let countdown: Countdown;
     let levelsPanel: LevelsPanel;
     let firestoreService: FirestoreService;
+    let statsLandingPage: StatsLandingPage;
     let isGameInitialized = false;
     const backgroundImage = p.loadImage('../assets/background.png');
 
@@ -92,6 +90,17 @@ const sketch = (p: p5) => {
 
             // Hide loading screen
             loadingScreen.hide();
+
+            // Show stats landing page
+            statsLandingPage = new StatsLandingPage(firestoreService);
+            statsLandingPage.setOnPlayCallback(() => {
+                statsLandingPage.hide();
+                levelsPanel.setHasActiveGame(false);
+                levelsPanel.show();
+                updateLevelsMenuButton();
+            });
+            statsLandingPage.show();
+            await statsLandingPage.loadAndDisplayStats();
         } catch (error) {
             console.error('Error loading game data:', error);
             // Continue even if data loading fails
@@ -111,7 +120,7 @@ const sketch = (p: p5) => {
         countdown = new Countdown();
 
         // Initialize game state with progress card and countdown (passing firestoreService)
-        gameState = new GameState(p, classicVen, soundManager, camera, progressCard, countdown, firestoreService);
+        gameState = new GameState(p, threeCircleVenn, soundManager, camera, progressCard, countdown, firestoreService);
         inputHandler = new InputHandler(p, gameState, camera);
 
         // Initialize and show player card
@@ -145,99 +154,26 @@ const sketch = (p: p5) => {
 
         // Set up callback for when panel closes with active game
         levelsPanel.setOnCloseCallback(() => {
-            // Reload the current board
-            gameState.restart();
+            // Just hide the panel, don't restart the game
+            // This allows players to continue their current game
+        });
+
+        // Set up callback for when Home button is clicked
+        levelsPanel.setOnHomeCallback(() => {
+            // Clear the game state
+            //gameState.restart();
+            // Show the landing page
+            statsLandingPage.show();
+            statsLandingPage.loadAndDisplayStats();
         });
 
         // Define all levels with metadata
-        const levels: Level[] = [
-            {
-                id: 'classic-venn',
-                name: 'Classic Venn',
-                difficulty: 1,
-                boardData: classicVen,
-                boardName: 'Classic Venn',
-                description: 'Two overlapping circles - perfect for beginners'
-            },
-            {
-                id: 'three-overlap',
-                name: 'Three Overlap',
-                difficulty: 1,
-                boardData: threeCircleVenn,
-                boardName: 'Three Overlap',
-                description: 'Three circles with a central intersection'
-            },
-            {
-                id: 'planetary-system',
-                name: 'Planetary System',
-                difficulty: 1,
-                boardData: planetarySystem,
-                boardName: 'Planetary System',
-                description: 'A large circle with smaller orbiting circles'
-            },
-            {
-                id: 'caterpillar',
-                name: 'Caterpillar',
-                difficulty: 1,
-                boardData: caterpillarChain,
-                boardName: 'Caterpillar',
-                description: 'Chain of overlapping circles'
-            },
-            {
-                id: 'bubble-cluster',
-                name: 'Bubble Cluster',
-                difficulty: 1,
-                boardData: bubbleCluster,
-                boardName: 'Bubble Cluster',
-                description: 'Multiple circles in a cluster formation'
-            },
-            {
-                id: 'level-1',
-                name: 'Challenge 1',
-                difficulty: 2,
-                boardData: generateLevel(700, 350, 20, 100, 'Challenge 1', 12345),
-                boardName: 'Challenge 1',
-                description: 'Randomly generated level - easy difficulty'
-            },
-            {
-                id: 'level-2',
-                name: 'Challenge 2',
-                difficulty: 3,
-                boardData: generateLevel(1400, 700, 20, 100, 'Challenge 2', 67890),
-                boardName: 'Challenge 2',
-                description: 'Randomly generated level - medium difficulty'
-            },
-            {
-                id: 'level-3',
-                name: 'Challenge 3',
-                difficulty: 4,
-                boardData: generateLevel(2800, 1400, 20, 100, 'Challenge 3', 24680),
-                boardName: 'Challenge 3',
-                description: 'Randomly generated level - hard difficulty'
-            },
-            {
-                id: 'level-4',
-                name: 'Challenge 4',
-                difficulty: 4,
-                boardData: generateLevel(3200, 1600, 20, 100, 'Challenge 4', 13579),
-                boardName: 'Challenge 4',
-                description: 'Randomly generated level - hard difficulty'
-            },
-            {
-                id: 'level-5',
-                name: 'Challenge 5',
-                difficulty: 5,
-                boardData: generateLevel(4000, 2000, 20, 100, 'Challenge 5', 98765),
-                boardName: 'Challenge 5',
-                description: 'Randomly generated level - expert difficulty'
-            }
-        ];
+        const levels = [...loadedLevels];
 
         // Add all levels to the panel
         levelsPanel.addLevels(levels);
 
-        // Show levels panel initially so player can select first level
-        levelsPanel.show();
+        // Don't show levels panel initially - landing page will do it via PLAY button
 
         // Set up next level callback for GameState
         gameState.setNextLevelCallback(() => {
