@@ -5,24 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Circle Game Prototype</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+          "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+          "firebase/analytics": "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+        }
+      }
+    </script>
     <link rel="stylesheet" href="style/main.css" />
+    <link rel="stylesheet" href="style/stats-landing.css" />
   </head>
   <body>
-    <div id="map-controls">
-      <button id="map1-btn">Classic Venn</button>
-      <button id="map2-btn">Three Overlap</button>
-      <button id="map3-btn">Planetary System</button>
-      <button id="map4-btn">Caterpillar</button>
-      <button id="map5-btn">Bubble Cluster</button>
-      <button id="map6-btn">HARD!</button>
+    <div id="map-controls" style="display: none;">
+      <!-- Extra buttons will be added programmatically -->
     </div>
-    <div id="progress-container">
+    <button id="levels-menu-btn" class="levels-menu-button hidden">
+      📋 Levels
+    </button>
+    <div id="countdown-overlay">
+      <div id="countdown-number">3</div>
+    </div>
+    <div id="levels-panel">
+      <!-- Levels panel will be populated by LevelsPanel.ts -->
+    </div>
+    <div id="progress-card">
+      <!-- Progress card will be populated by ProgressCard.ts -->
+    </div>
+    <div id="progress-container" style="display: none;">
       Progress: <span id="progress-value">0%</span>
     </div>
     <div id="zoom-controls">
       <button id="zoom-in-btn">Zoom In (+)</button>
       <button id="zoom-out-btn">Zoom Out (-)</button>
       <button id="zoom-reset-btn">Reset View</button>
+    </div>
+    <div id="pan-controls">
+      <label for="left-pan-toggle">
+        <input type="checkbox" id="left-pan-toggle" />
+        Modo do Tiaguinho
+      </label>
+      <div id="pan-factor-container">
+        <label for="pan-factor-slider">
+          Quantidade de arrasto: <span id="pan-factor-value">50%</span>
+        </label>
+        <input
+          type="range"
+          id="pan-factor-slider"
+          min="1"
+          max="100"
+          step="1"
+          value="70"
+        />
+      </div>
     </div>
     <div id="result-panel">
       <div id="result-title">Result</div>
@@ -31,6 +68,7 @@
       </div>
       <div class="button-container">
         <button id="restart-btn">Restart</button>
+        <button id="next-level-btn">Next Level</button>
         <button id="level-btn">Pick Level</button>
       </div>
       </div>

@@ -1,0 +1,397 @@
+import { Level } from "../ui/index.js";
+import { ICircle } from "./types.js";
+
+// Simple seeded RNG utilities (Mulberry32)
+let globalRng: (() => number) | null = null;
+
+function seedFromNumber(n: number): number {
+    // Ensure 32-bit unsigned
+    return n >>> 0;
+}
+
+function hashStringToUint32(str: string): number {
+    // FNV-1a 32-bit hash
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h >>> 0;
+}
+
+function createRngFromSeed(seed: number | string): () => number {
+    let s = typeof seed === 'number' ? seedFromNumber(seed) : hashStringToUint32(seed);
+    // Mulberry32
+    return function () {
+        s |= 0;
+        s = (s + 0x6D2B79F5) | 0;
+        let t = Math.imul(s ^ (s >>> 15), 1 | s);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
+/**
+ * Set a global RNG seed to make subsequent level generation deterministic.
+ * If not set, generateLevel will fall back to Math.random.
+ */
+export function setRandomSeed(seed: number | string | null): void {
+    if (seed === null || typeof seed === 'undefined') {
+        globalRng = null;
+    } else {
+        globalRng = createRngFromSeed(seed);
+    }
+}
+
+export function resetRandomSeed(): void {
+    globalRng = null;
+}
+
+export interface IBoardData extends Array<ICircle> {
+    name?: string;
+}
+
+export class BoardData {
+    // TODO: Implement BoardData logic
+}
+
+const classicVenData: ICircle[] = [
+    { center: { x: -30, y: 10 }, radius: 50 },
+    { center: { x: 30, y: 0 }, radius: 50 },
+];
+export const classicVen = Object.assign(classicVenData, { name: 'Classic Venn' });
+
+const threeCircleVennData: ICircle[] = [
+    { center: { x: 0, y: -80 }, radius: 100 },
+    { center: { x: 0, y: 0 }, radius: 30 },
+    { center: { x: 70, y: 50 }, radius: 100 },
+    { center: { x: -70, y: 50 }, radius: 100 },
+];
+export const threeCircleVenn = Object.assign(threeCircleVennData, { name: 'Three Overlap' });
+
+const planetarySystemData: ICircle[] = [
+    { center: { x: 0, y: 0 }, radius: 180 },
+    { center: { x: -110, y: -90 }, radius: 60 },
+    { center: { x: 120, y: -70 }, radius: 75 },
+    { center: { x: 80, y: 110 }, radius: 50 },
+];
+export const planetarySystem = Object.assign(planetarySystemData, { name: 'Planetary System' });
+
+const caterpillarChainData: ICircle[] = [
+    { center: { x: -150, y: 20 }, radius: 40 },
+    { center: { x: -100, y: -10 }, radius: 50 },
+    { center: { x: -40, y: 30 }, radius: 60 },
+    { center: { x: 30, y: -20 }, radius: 55 },
+    { center: { x: 90, y: 40 }, radius: 45 },
+];
+export const caterpillarChain = Object.assign(caterpillarChainData, { name: 'Caterpillar' });
+
+const bubbleClusterData: ICircle[] = [
+    { center: { x: 0, y: 0 }, radius: 80 },
+    { center: { x: 70, y: 30 }, radius: 60 },
+    { center: { x: -50, y: 60 }, radius: 55 },
+    { center: { x: -80, y: -40 }, radius: 45 },
+    { center: { x: 40, y: -90 }, radius: 50 },
+    { center: { x: 10, y: 80 }, radius: 30 },
+    { center: { x: -20, y: -95 }, radius: 25 },
+];
+export const bubbleCluster = Object.assign(bubbleClusterData, { name: 'Bubble Cluster' });
+
+/**
+ * Generates a level with circles based on board size.
+ * The number of circles is calculated from the board area and circle sizes.
+ *
+ * @param width - Fixed width of the board
+ * @param height - Fixed height of the board
+ * @param minRadius - Minimum radius for circles
+ * @param maxRadius - Maximum radius for circles
+ * @param name - Optional name for the board
+ * @returns Array of circles for the level with optional name
+ */
+export const generateLevel = (
+    width: number,
+    height: number,
+    minRadius: number = 20,
+    maxRadius: number = 100,
+    name?: string,
+    seed?: number | string
+): IBoardData => {
+    const boardArea = width * height;
+
+    // Calculate average circle area
+    const avgRadius = (minRadius + maxRadius) / 2;
+    const avgCircleArea = Math.PI * avgRadius * avgRadius;
+
+    // Calculate number of circles based on board coverage
+    // Target coverage: 40-60% of board area with overlap tolerance
+    const overlapFactor = 0.7; // Accounts for overlaps reducing effective area
+    const n = Math.floor((boardArea / 2) / (avgCircleArea * overlapFactor));
+
+    // Ensure we have at least 2 circles and not too many
+    const circleCount = Math.max(2, n);
+
+    const circles: ICircle[] = [];
+    const x0 = -width / 2;
+    const y0 = -height / 2;
+    let attempts = 0;
+
+    // Choose RNG: per-call seed > global seeded RNG > Math.random
+    const rng = (() => {
+        if (typeof seed !== 'undefined' && seed !== null) {
+            return createRngFromSeed(seed);
+        }
+        if (globalRng) return globalRng;
+        return Math.random;
+    })();
+
+    while (circles.length < circleCount && attempts < circleCount * 20) {
+        attempts++;
+        const r = minRadius + rng() * (maxRadius - minRadius);
+        const x = x0 + r + rng() * (width - 2 * r);
+        const y = y0 + r + rng() * (height - 2 * r);
+
+        let contained = false;
+        for (const c of circles) {
+            const dist = Math.hypot(x - c.center.x, y - c.center.y);
+
+            // Check if new circle is inside existing circle
+            if (dist + r <= c.radius) {
+                contained = true;
+                break;
+            }
+
+            // Check if existing circle is inside new circle
+            if (dist + c.radius <= r) {
+                contained = true;
+                break;
+            }
+        }
+
+        if (!contained) {
+            circles.push({ center: { x, y }, radius: r });
+        }
+    }
+
+    return Object.assign(circles, name ? { name } : {});
+};
+
+
+export const loadedLevels: Level[] = [
+    /*{
+        id: 'classic-venn',
+        name: 'Classic Venn',
+        difficulty: 0,
+        boardData: classicVen,
+        boardName: 'Classic Venn',
+        description: 'Two overlapping circles - perfect for beginners'
+    },*/
+    {
+        id: 'three-overlap',
+        name: 'Three Overlap',
+        difficulty: 0,
+        boardData: threeCircleVenn,
+        boardName: 'Three Overlap',
+        description: 'Three circles with a central intersection'
+    },
+    {
+        id: 'planetary-system',
+        name: 'Planetary System',
+        difficulty: 0,
+        boardData: planetarySystem,
+        boardName: 'Planetary System',
+        description: 'A large circle with smaller orbiting circles'
+    },
+    {
+        id: 'caterpillar',
+        name: 'Caterpillar',
+        difficulty: 0,
+        boardData: caterpillarChain,
+        boardName: 'Caterpillar',
+        description: 'Chain of overlapping circles'
+    },
+    {
+        id: 'bubble-cluster',
+        name: 'Bubble Cluster',
+        difficulty: 0,
+        boardData: bubbleCluster,
+        boardName: 'Bubble Cluster',
+        description: 'Multiple circles in a cluster formation'
+    },
+    {
+        id: 'level-1',
+        name: 'Level Easy - 1',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 1', 12345),
+        boardName: 'Level Easy - 1',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-2',
+        name: 'Level Easy - 2',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 2', 12445),
+        boardName: 'Level Easy - 2',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-3',
+        name: 'Level Easy - 3',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 3', 12545),
+        boardName: 'Level Easy - 3',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-4',
+        name: 'Level Easy - 4',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 4', 12645),
+        boardName: 'Level Easy - 4',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-5',
+        name: 'Level Easy - 5',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 5', 12745),
+        boardName: 'Level Easy - 5',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-6',
+        name: 'Level Easy - 6',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 6', 12845),
+        boardName: 'Level Easy - 6',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-7',
+        name: 'Level Easy - 7',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 7', 12945),
+        boardName: 'Level Easy - 7',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-8',
+        name: 'Level Easy - 8',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 8', 12145),
+        boardName: 'Level Easy - 8',
+        description: 'Randomly generated level - easy difficulty'
+    },
+    {
+        id: 'level-9',
+        name: 'Level Easy - 9',
+        difficulty: 1,
+        boardData: generateLevel(700, 350, 20, 100, 'Level Easy - 9', 12245),
+        boardName: 'Level Easy - 9',
+        description: 'Randomly generated level - easy difficulty'
+    },
+
+    // Medium difficulty levels
+    {
+        id: 'level-10',
+        name: 'Level Medium - 1',
+        difficulty: 2,
+        boardData: generateLevel(1400, 700, 20, 100, 'Level Medium - 1', 22345),
+        boardName: 'Level Medium - 1',
+        description: 'Randomly generated level - medium difficulty'
+    },
+    {
+        id: 'level-11',
+        name: 'Level Medium - 2',
+        difficulty: 2,
+        boardData: generateLevel(1400, 700, 20, 100, 'Level Medium - 2', 23345),
+        boardName: 'Level Medium - 2',
+        description: 'Randomly generated level - medium difficulty'
+    },
+    {
+        id: 'level-12',
+        name: 'Level Medium - 3',
+        difficulty: 2,
+        boardData: generateLevel(1400, 700, 20, 100, 'Level Medium - 3', 24345),
+        boardName: 'Level Medium - 3',
+        description: 'Randomly generated level - medium difficulty'
+    },
+    {
+        id: 'level-13',
+        name: 'Level Medium - 4',
+        difficulty: 2,
+        boardData: generateLevel(1400, 700, 20, 100, 'Level Medium - 4', 25345),
+        boardName: 'Level Medium - 4',
+        description: 'Randomly generated level - medium difficulty'
+    },
+    {
+        id: 'level-14',
+        name: 'Level Medium - 5',
+        difficulty: 2,
+        boardData: generateLevel(1400, 700, 20, 100, 'Level Medium - 5', 26345),
+        boardName: 'Level Medium - 5',
+        description: 'Randomly generated level - medium difficulty'
+    },
+
+    // Medium-Hard difficulty levels
+    {
+        id: 'level-15',
+        name: 'Level Medium-Hard - 1',
+        difficulty: 3,
+        boardData: generateLevel(2800, 1400, 20, 110, 'Level Medium-Hard - 1', 25680),
+        boardName: 'Level Medium-Hard - 1',
+        description: 'Randomly generated level - hard difficulty'
+    },
+    {
+        id: 'level-16',
+        name: 'Level Medium-Hard - 2',
+        difficulty: 3,
+        boardData: generateLevel(2800, 1400, 20, 110, 'Level Medium-Hard - 2', 26680),
+        boardName: 'Level Medium-Hard - 2',
+        description: 'Randomly generated level - hard difficulty'
+    },
+    {
+        id: 'level-17',
+        name: 'Level Medium-Hard - 3',
+        difficulty: 3,
+        boardData: generateLevel(2800, 1400, 20, 110, 'Level Medium-Hard - 3', 27680),
+        boardName: 'Level Medium-Hard - 3',
+        description: 'Randomly generated level - hard difficulty'
+    },
+
+
+    // Hard difficulty levels
+    {
+        id: 'level-18',
+        name: 'Level Hard - 1',
+        difficulty: 4,
+        boardData: generateLevel(3200, 1600, 20, 130, 'Level Hard - 1', 13579),
+        boardName: 'Level Hard - 1',
+        description: 'Randomly generated level - hard difficulty'
+    },
+    {
+        id: 'level-19',
+        name: 'Level Hard - 2',
+        difficulty: 4,
+        boardData: generateLevel(3200, 1600, 20, 130, 'Level Hard - 2', 14579),
+        boardName: 'Level Hard - 2',
+        description: 'Randomly generated level - hard difficulty'
+    },
+    {
+        id: 'level-20',
+        name: 'Level Hard - 3',
+        difficulty: 4,
+        boardData: generateLevel(3200, 1600, 20, 130, 'Level Hard - 3', 15579),
+        boardName: 'Level Hard - 3',
+        description: 'Randomly generated level - hard difficulty'
+    },
+
+    // Extreme difficulty levels
+    {
+        id: 'level-21',
+        name: 'Level Extreme - 1',
+        difficulty: 5,
+        boardData: generateLevel(4600, 2300, 20, 150, 'Level Extreme - 1', 98765),
+        boardName: 'Level Extreme - 1',
+        description: 'Randomly generated level - expert difficulty'
+    }
+];

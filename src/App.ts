@@ -1,251 +1,330 @@
-import { Board } from './Board.js';
+import type p5 from 'p5';
 import {
-    classicVen,
     threeCircleVenn,
-    planetarySystem,
-    caterpillarChain,
-    bubbleCluster,
-    generateChaoticBoard,
-} from './BoardData.js';
+    loadedLevels
+} from './game/BoardData.js';
+import { SoundManager } from './sound/SoundManager.js';
+import { CameraController } from './camera/CameraController.js';
+import { GameState } from './game/GameState.js';
+import { InputHandler } from './input/InputHandler.js';
+import { UIManager } from './ui/UIManager.js';
+import { PlayerCard } from './ui/PlayerCard.js';
+import { ProgressCard } from './ui/ProgressCard.js';
+import { Countdown } from './ui/Countdown.js';
+import { AuthManager } from './auth/AuthManager.js';
+import { FirebaseAuthProvider } from './auth/FirebaseAuthProvider.js';
+import { LoginScreen } from './auth/LoginScreen.js';
+import { LevelsPanel, Level } from './ui/LevelsPanel.js';
+import { LoadingScreen } from './ui/LoadingScreen.js';
+import { FirestoreService } from './data/FirestoreService.js';
+import { NotificationManager } from './ui/NotificationManager.js';
+import { StatsLandingPage } from './ui/StatsLandingPage.js';
 
-const sketch = (p: any) => {
-    let activeBoard: Board;
-    let isHunting = false;
-    let isPlaying = true;
-    let lastBoard: any = null;
+const sketch = (p: p5) => {
+    let camera: CameraController;
+    let gameState: GameState;
+    let inputHandler: InputHandler;
+    let soundManager: SoundManager;
+    let authManager: AuthManager;
+    let loginScreen: LoginScreen;
+    let loadingScreen: LoadingScreen;
+    let playerCard: PlayerCard;
+    let progressCard: ProgressCard;
+    let countdown: Countdown;
+    let levelsPanel: LevelsPanel;
+    let firestoreService: FirestoreService;
+    let statsLandingPage: StatsLandingPage;
+    let isGameInitialized = false;
+    const backgroundImage = p.loadImage('../assets/background.png');
 
-    // Camera/View controls
-    let zoomLevel = 1.0;
-    let panX = 0;
-    let panY = 0;
-    let isPanning = false;
-    let lastMouseX = 0;
-    let lastMouseY = 0;
-
-    // Touch controls for mobile
-    let isTouchPanning = false;
-    let lastTouchX = 0;
-    let lastTouchY = 0;
-
-    const updateProgress = () => {
-        const progress = activeBoard.getProgress();
-        const progressElem = document.getElementById('progress-value');
-        if (progressElem) progressElem.textContent = `${progress}%`;
-    };
-
-    const resetView = () => {
-        zoomLevel = 1.0;
-        panX = 0;
-        panY = 0;
-    };
-
-    const loadMap = (circles: any) => {
-        activeBoard = new Board(p, circles);
-        updateProgress();
-        lastBoard = circles;
-        isPlaying = true;
-        resetView();
-        const resultPanel = document.getElementById('result-panel');
-        if (resultPanel) resultPanel.style.display = 'none';
-    };
 
     p.setup = () => {
         p.createCanvas(p.windowWidth, p.windowHeight);
-        activeBoard = new Board(p, classicVen);
-        const map1Button = document.getElementById('map1-btn');
-        const map2Button = document.getElementById('map2-btn');
-        const map3Button = document.getElementById('map3-btn');
-        const map4Button = document.getElementById('map4-btn');
-        const map5Button = document.getElementById('map5-btn');
-        const map6Button = document.getElementById('map6-btn');
-        map1Button?.addEventListener('click', () => loadMap(classicVen));
-        map2Button?.addEventListener('click', () => loadMap(threeCircleVenn));
-        map3Button?.addEventListener('click', () => loadMap(planetarySystem));
-        map4Button?.addEventListener('click', () => loadMap(caterpillarChain));
-        map5Button?.addEventListener('click', () => loadMap(bubbleCluster));
-        map6Button?.addEventListener('click', () => loadMap(generateChaoticBoard(p, 50)));
-        lastBoard = classicVen;
-        const restartBtn = document.getElementById('restart-btn');
-        const levelBtn = document.getElementById('level-btn');
-        restartBtn?.addEventListener('click', () => {
-            if (lastBoard) {
-                const resultPanel = document.getElementById('result-panel');
-                if (resultPanel) resultPanel.style.display = 'none';
-                loadMap(lastBoard);
-            }
+        p.background(backgroundImage);
+
+        // Initialize Firestore service
+        firestoreService = new FirestoreService();
+
+        // Initialize authentication system with Firebase
+        const authProvider = new FirebaseAuthProvider();
+        authManager = new AuthManager(authProvider);
+
+        // Initialize loading screen
+        loadingScreen = new LoadingScreen();
+
+        // Show login screen first
+        loginScreen = new LoginScreen(authManager, async () => {
+            // This callback is called after successful login
+            await loadGameDataAndInitialize();
         });
-        levelBtn?.addEventListener('click', () => {
-            const resultPanel = document.getElementById('result-panel');
-            if (resultPanel) resultPanel.style.display = 'none';
+        loginScreen.show();
+    };
+
+    const loadGameDataAndInitialize = async () => {
+        // Hide login screen
+        loginScreen.hide();
+
+        // Show loading screen
+        loadingScreen.show('Loading your game data...');
+
+        // Small delay for UI update
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        try {
+            // Initialize game first (so GameDataManager exists)
+            await initializeGame();
+
+            // Load game data
+            const gameDataManager = gameState.statsCollector.getGameDataManager();
+
+            // Setup notification callback for upload failures
+            const notificationManager = NotificationManager.getInstance();
+            gameDataManager.setOnUploadFailedCallback((message: string) => {
+                notificationManager.showOfflineMessage(message);
+            });
+
+            await gameDataManager.loadData();
+
+            // Setup levels panel
+            setupLevelsPanel();
+
+            // Hide loading screen
+            loadingScreen.hide();
+
+            // Show stats landing page
+            statsLandingPage = new StatsLandingPage(firestoreService);
+            statsLandingPage.setOnPlayCallback(() => {
+                statsLandingPage.hide();
+                levelsPanel.setHasActiveGame(false);
+                levelsPanel.show();
+                updateLevelsMenuButton();
+            });
+            statsLandingPage.show();
+            await statsLandingPage.loadAndDisplayStats();
+        } catch (error) {
+            console.error('Error loading game data:', error);
+            // Continue even if data loading fails
+            loadingScreen.hide();
+        }
+    };
+
+    const initializeGame = async () => {
+        if (isGameInitialized) return;
+
+        // Initialize core systems
+        soundManager = new SoundManager(p);
+        camera = new CameraController(p);
+
+        // Initialize UI components
+        progressCard = new ProgressCard();
+        countdown = new Countdown();
+
+        // Initialize game state with progress card and countdown (passing firestoreService)
+        gameState = new GameState(p, threeCircleVenn, soundManager, camera, progressCard, countdown, firestoreService);
+        inputHandler = new InputHandler(p, gameState, camera);
+
+        // Initialize and show player card
+        playerCard = new PlayerCard(authManager);
+        playerCard.show();
+
+        // Setup levels panel
+        //setupLevelsPanel();
+
+        // Setup UI controls
+        setupUIControls();
+
+        // Setup camera controls
+        setupCameraControls();
+
+        // Setup input listeners
+        setupInputListeners();
+
+        isGameInitialized = true;
+
+        console.log(`Game initialized for player: ${authManager.getCurrentUser()}`);
+    };
+
+    const setupLevelsPanel = () => {
+        // Initialize the levels panel with GameDataManager
+        levelsPanel = new LevelsPanel((level: Level) => {
+            gameState.loadMap(level.boardData);
+            // Update the levels menu button visibility
+            updateLevelsMenuButton();
+        }, gameState.statsCollector.getGameDataManager());
+
+        // Set up callback for when panel closes with active game
+        levelsPanel.setOnCloseCallback(() => {
+            // Just hide the panel, don't restart the game
+            // This allows players to continue their current game
         });
 
-        // Zoom controls
+        // Set up callback for when Home button is clicked
+        levelsPanel.setOnHomeCallback(() => {
+            // Clear the game state
+            //gameState.restart();
+            // Show the landing page
+            statsLandingPage.show();
+            statsLandingPage.loadAndDisplayStats();
+        });
+
+        // Define all levels with metadata
+        const levels = [...loadedLevels];
+
+        // Add all levels to the panel
+        levelsPanel.addLevels(levels);
+
+        // Don't show levels panel initially - landing page will do it via PLAY button
+
+        // Set up next level callback for GameState
+        gameState.setNextLevelCallback(() => {
+            return levelsPanel.loadNextLevel();
+        });
+    };
+
+    const updateLevelsMenuButton = () => {
+        const levelsMenuBtn = document.getElementById('levels-menu-btn');
+        if (levelsMenuBtn) {
+            if (levelsPanel.isVisible()) {
+                levelsMenuBtn.classList.add('hidden');
+            } else {
+                levelsMenuBtn.classList.remove('hidden');
+            }
+        }
+    };
+
+    const setupUIControls = () => {
+        const restartBtn = document.getElementById('restart-btn');
+        const levelBtn = document.getElementById('level-btn');
+        const nextLevelBtn = document.getElementById('next-level-btn');
+        const levelsMenuBtn = document.getElementById('levels-menu-btn');
+
+        // Levels menu button - toggle panel
+        levelsMenuBtn?.addEventListener('click', () => {
+            if (levelsPanel.isVisible()) {
+                levelsPanel.setHasActiveGame(gameState.isPlaying);
+                levelsPanel.hide();
+            } else {
+                UIManager.hidePanel('result-panel');
+                levelsPanel.setHasActiveGame(gameState.isPlaying);
+                levelsPanel.show();
+            }
+            updateLevelsMenuButton();
+        });
+
+        restartBtn?.addEventListener('click', () => {
+            gameState.restart();
+        });
+
+        levelBtn?.addEventListener('click', () => {
+            UIManager.hidePanel('result-panel');
+            levelsPanel.setHasActiveGame(false);
+            levelsPanel.show();
+            updateLevelsMenuButton();
+        });
+
+        nextLevelBtn?.addEventListener('click', () => {
+            const hasNextLevel = gameState.loadNextLevel();
+            if (hasNextLevel) {
+                UIManager.hidePanel('result-panel');
+            } else {
+                // No next level available, show levels panel
+                UIManager.hidePanel('result-panel');
+                levelsPanel.setHasActiveGame(false);
+                levelsPanel.show();
+                updateLevelsMenuButton();
+            }
+        });
+    };
+
+    const setupCameraControls = () => {
         const zoomInBtn = document.getElementById('zoom-in-btn');
         const zoomOutBtn = document.getElementById('zoom-out-btn');
         const zoomResetBtn = document.getElementById('zoom-reset-btn');
 
-        zoomInBtn?.addEventListener('click', () => {
-            zoomLevel *= 1.2;
-            if (zoomLevel > 5) zoomLevel = 5; // Max zoom
+        zoomInBtn?.addEventListener('click', () => camera.zoomIn());
+        zoomOutBtn?.addEventListener('click', () => camera.zoomOut());
+        zoomResetBtn?.addEventListener('click', () => camera.reset());
+
+        // Setup left-click panning controls
+        const leftPanToggle = document.getElementById('left-pan-toggle') as HTMLInputElement;
+        const panFactorSlider = document.getElementById('pan-factor-slider') as HTMLInputElement;
+        const panFactorValue = document.getElementById('pan-factor-value');
+
+        // Toggle left-click panning on/off
+        leftPanToggle?.addEventListener('change', () => {
+            const isEnabled = leftPanToggle.checked;
+            const percentage = parseFloat(panFactorSlider?.value || '70');
+            const factor = percentage / 100; // Convert percentage to 0.0-1.0 factor
+            camera.setLeftMousePanning(isEnabled, factor);
         });
 
-        zoomOutBtn?.addEventListener('click', () => {
-            zoomLevel /= 1.2;
-            if (zoomLevel < 0.2) zoomLevel = 0.2; // Min zoom
+        // Update pan factor when slider changes
+        panFactorSlider?.addEventListener('input', () => {
+            const percentage = parseFloat(panFactorSlider.value);
+            if (panFactorValue) {
+                panFactorValue.textContent = `${percentage}%`;
+            }
+            if (leftPanToggle?.checked) {
+                const factor = percentage / 100; // Convert percentage to 0.0-1.0 factor
+                camera.setLeftMousePanning(true, factor);
+            }
         });
+    };
 
-        zoomResetBtn?.addEventListener('click', () => {
-            resetView();
-        });
-        // Disable right-click context menu on the canvas
+    const setupInputListeners = () => {
+        // Disable right-click context menu
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // Touch event handlers for mobile two-finger panning
-        document.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                // Two fingers detected - start panning
-                e.preventDefault();
-                isTouchPanning = true;
-                const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-                const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-                lastTouchX = centerX;
-                lastTouchY = centerY;
-            }
-        }, { passive: false });
+        // Setup touch controls for mobile
+        camera.setupTouchControls();
 
-        document.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2 && isTouchPanning) {
-                // Continue panning with two fingers
-                e.preventDefault();
-                const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-                const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-                const dx = centerX - lastTouchX;
-                const dy = centerY - lastTouchY;
-                panX += dx;
-                panY += dy;
-                lastTouchX = centerX;
-                lastTouchY = centerY;
-            }
-        }, { passive: false });
-
-        document.addEventListener('touchend', (e) => {
-            if (e.touches.length < 2) {
-                // Less than two fingers - stop panning
-                isTouchPanning = false;
-            }
-        });
+        // Setup mouse wheel zoom
+        camera.setupMouseWheelZoom();
     };
 
     p.draw = () => {
-        if (!isPlaying) return;
-        p.background(50, 30, 40);
+        p.background(backgroundImage);
 
-        // Handle right-click panning
-        if (p.mouseIsPressed && p.mouseButton === p.RIGHT) {
-            if (!isPanning) {
-                isPanning = true;
-                lastMouseX = p.mouseX;
-                lastMouseY = p.mouseY;
-            } else {
-                const dx = p.mouseX - lastMouseX;
-                const dy = p.mouseY - lastMouseY;
-                panX += dx;
-                panY += dy;
-                lastMouseX = p.mouseX;
-                lastMouseY = p.mouseY;
+        // Only run game loop if game is initialized (after login)
+        if (!isGameInitialized) return;
+
+        // Don't allow interactions during countdown
+        if (!gameState.isCountingDown) {
+            if (gameState.isPlaying) {
+                // Handle cutting logic FIRST (before camera panning changes transform)
+                inputHandler.handleCutting();
             }
+
+            // Handle camera panning (both right-click and left-click)
+            camera.handleMousePanning();
         }
 
-        // Draw the cutting line and handle intersection
-        if (p.mouseIsPressed && p.mouseButton === p.LEFT) {
-            p.push();
-            p.stroke(255, 204, 0);
-            p.strokeWeight(4);
-            p.line(p.pmouseX, p.pmouseY, p.mouseX, p.mouseY);
-            p.pop();
-            if (isHunting) {
-                // Convert screen coordinates to world coordinates
-                const worldPrevX = (p.pmouseX - p.width / 2 - panX) / zoomLevel;
-                const worldPrevY = (p.pmouseY - p.height / 2 - panY) / zoomLevel;
-                const worldCurrX = (p.mouseX - p.width / 2 - panX) / zoomLevel;
-                const worldCurrY = (p.mouseY - p.height / 2 - panY) / zoomLevel;
-
-                const line = {
-                    start: { x: worldPrevX, y: worldPrevY },
-                    end: { x: worldCurrX, y: worldCurrY },
-                };
-                activeBoard.checkIntersection(line);
-                if (activeBoard.checkLoss(line)) {
-                    isPlaying = false;
-                    showResultPanel(false, `You popped a circle!<br>Progress: ${activeBoard.getProgress()}%`);
-                }
-            }
-            isHunting = true;
-        }
+        // Draw the cutting line (in screen space, before transform)
+        inputHandler.drawCuttingLine();
 
         // Apply camera transformations
-        p.translate(p.width / 2 + panX, p.height / 2 + panY);
-        p.scale(zoomLevel);
+        camera.applyTransform();
 
-        activeBoard.draw();
-        updateProgress();
-        if (activeBoard.checkVictory()) {
-            isPlaying = false;
-            showResultPanel();
+        // Update and draw game
+        gameState.update();
+        gameState.activeBoard.draw();
+
+        // Check victory condition (only when not counting down)
+        if (!gameState.isCountingDown) {
+            gameState.checkVictory();
         }
     };
 
-    function updateResultPanel({ title, stats = '', style = {} }: { title: string; stats?: string; style?: any }) {
-        const panel = document.getElementById('result-panel');
-        if (!panel) return;
-        const titleElem = document.getElementById('result-title');
-        const statsElem = document.getElementById('result-stats');
-        if (titleElem) titleElem.textContent = title;
-        if (statsElem) statsElem.innerHTML = stats ?? '';
-        if (style && typeof style === 'object') {
-            Object.keys(style).forEach((key) => {
-          (panel as HTMLElement).style.setProperty(key, style[key]);
-            });
-        }
-    }
-
-    function showVictoryPanel(stats = '') {
-        updateResultPanel({
-            title: 'Victory!',
-            stats,
-            style: { background: '#2ecc40' },
-        });
-        const panel = document.getElementById('result-panel');
-        if (panel) panel.style.display = 'block';
-    }
-
-    function showLossPanel(stats = '') {
-        updateResultPanel({
-            title: 'Game Over',
-            stats,
-            style: { background: '#e74c3c' },
-        });
-        const panel = document.getElementById('result-panel');
-        if (panel) panel.style.display = 'block';
-    }
-
-    function showResultPanel(isVictory = true, stats = '') {
-        if (isVictory) {
-            showVictoryPanel(stats);
-        } else {
-            showLossPanel(stats);
-        }
-    }
-
     p.mousePressed = () => {
-        if (!isHunting) {
-            isHunting = true;
+        if (isGameInitialized && !gameState.isCountingDown) {
+            inputHandler.onMousePressed();
         }
     };
 
     p.mouseReleased = () => {
-        isHunting = false;
-        isPanning = false;
+        if (isGameInitialized && !gameState.isCountingDown) {
+            inputHandler.onMouseReleased();
+        }
     };
 
     p.windowResized = () => {
@@ -254,3 +333,4 @@ const sketch = (p: any) => {
 };
 
 new (window as any).p5(sketch);
+

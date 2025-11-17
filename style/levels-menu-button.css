@@ -1,0 +1,65 @@
+/**
+ * Levels Menu Button
+ * Fixed button to open/close the levels panel
+ */
+
+.levels-menu-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 900;
+
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.levels-menu-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.levels-menu-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Hide button when levels panel is open */
+.levels-menu-button.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-20px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .levels-menu-button {
+        top: 15px;
+        left: 15px;
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .levels-menu-button {
+        top: 10px;
+        left: 10px;
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+}
