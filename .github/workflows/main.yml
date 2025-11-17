@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
-      
+
       - name: Set up Node.js 🏗️
         uses: actions/setup-node@v4
         with:
@@ -44,6 +44,7 @@ jobs:
           mkdir -p _site
           cp -r dist/ _site/dist
           cp -r style/ _site/style
+          cp -r assets/ _site/assets
           cp index.html _site/index.html
 
       - name: Upload artifact ⬆️
