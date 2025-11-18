@@ -23,6 +23,7 @@ export class CameraController {
     private isTouchPanning: boolean = false;
     private lastTouchX: number = 0;
     private lastTouchY: number = 0;
+    private lastTouchDistance: number = 0;
 
     constructor(p: p5) {
         this.p = p;
@@ -250,7 +251,16 @@ export class CameraController {
     }
 
     /**
-     * Sets up touch event handlers for two-finger panning
+     * Calculates the distance between two touch points
+     */
+    private getTouchDistance(touch1: Touch, touch2: Touch): number {
+        const dx = touch2.clientX - touch1.clientX;
+        const dy = touch2.clientY - touch1.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    /**
+     * Sets up touch event handlers for two-finger panning and pinch-to-zoom
      * Should be called once during setup
      */
     setupTouchControls(): void {
@@ -262,26 +272,51 @@ export class CameraController {
                 const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
                 this.lastTouchX = centerX;
                 this.lastTouchY = centerY;
+                this.lastTouchDistance = this.getTouchDistance(e.touches[0], e.touches[1]);
             }
         }, { passive: false });
 
         document.addEventListener('touchmove', (e) => {
             if (e.touches.length === 2 && this.isTouchPanning) {
                 e.preventDefault();
+
+                // Calculate current center point
                 const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                 const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+                // Handle panning
                 const dx = centerX - this.lastTouchX;
                 const dy = centerY - this.lastTouchY;
                 this.panX += dx;
                 this.panY += dy;
                 this.lastTouchX = centerX;
                 this.lastTouchY = centerY;
+
+                // Handle pinch-to-zoom
+                const currentDistance = this.getTouchDistance(e.touches[0], e.touches[1]);
+                if (this.lastTouchDistance > 0) {
+                    const distanceChange = currentDistance - this.lastTouchDistance;
+                    const zoomFactor = 1 + (distanceChange * 0.01); // Sensitivity factor
+
+                    // Get canvas bounding rect for correct coordinate conversion
+                    const canvas = document.querySelector('canvas');
+                    if (canvas) {
+                        const rect = canvas.getBoundingClientRect();
+                        const canvasCenterX = centerX - rect.left;
+                        const canvasCenterY = centerY - rect.top;
+
+                        // Zoom towards the pinch center point
+                        this.zoomTowardsPoint(canvasCenterX, canvasCenterY, zoomFactor);
+                    }
+                }
+                this.lastTouchDistance = currentDistance;
             }
         }, { passive: false });
 
         document.addEventListener('touchend', (e) => {
             if (e.touches.length < 2) {
                 this.isTouchPanning = false;
+                this.lastTouchDistance = 0;
             }
         });
     }

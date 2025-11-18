@@ -187,7 +187,7 @@ export class StatsLandingPage {
         // Convert to array and sort by total wins
         const sortedPlayers = Object.values(leaderboardData)
             .sort((a, b) => b.totalGamesWon - a.totalGamesWon)
-            .slice(0, 10);
+            .slice(0, 5);
 
         if (sortedPlayers.length === 0) {
             this.displayNoData('leaderboard');
@@ -273,7 +273,7 @@ export class StatsLandingPage {
             const durationA = a.endTime - a.startTime;
             const durationB = b.endTime - b.startTime;
             return durationA - durationB;
-        }).slice(0, 5);
+        }).slice(0, 3);
 
         const scoresHTML = sortedScores.map((score, index) => {
             const duration = score.endTime - score.startTime;

@@ -419,6 +419,7 @@ const sketch = (p: p5) => {
 
     p.touchStarted = () => {
         if (p.touches.length > 1) {
+            inputHandler.onMouseReleased();
             return;
         }
         if (isGameInitialized && !gameState.isCountingDown && !isAnyPanelVisible()) {
