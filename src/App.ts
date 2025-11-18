@@ -60,26 +60,28 @@ const sketch = (p: p5) => {
     let firestoreService: FirestoreService;
     let statsLandingPage: StatsLandingPage;
     let isGameInitialized = false;
-    let backgroundImage: p5.Image;
+    let backgroundImage: p5.Image | null = null;
 
     /**
      * Load background image with fallback paths
      */
-    const loadBackgroundImage = (): p5.Image => {
+    const loadBackgroundImage = () => {
         // Try loading from both possible paths
         // First try relative path (for local development)
-        let img = p.loadImage(
+        p.loadImage(
             '../assets/background.png',
-            () => {
+            (img) => {
                 console.log('Background loaded from ../assets/background.png');
+                backgroundImage = img;
             },
             () => {
                 // If that fails, try the deployment path
                 console.log('Trying alternative path: ./assets/background.png');
-                img = p.loadImage(
+                p.loadImage(
                     './assets/background.png',
-                    () => {
+                    (img) => {
                         console.log('Background loaded from ./assets/background.png');
+                        backgroundImage = img;
                     },
                     (err) => {
                         console.error('Failed to load background image from both paths', err);
@@ -87,7 +89,6 @@ const sketch = (p: p5) => {
                 );
             }
         );
-        return img;
     };
 
     /**
@@ -124,7 +125,7 @@ const sketch = (p: p5) => {
         p.createCanvas(p.windowWidth, p.windowHeight);
 
         // Load background image with fallback
-        backgroundImage = loadBackgroundImage();
+        loadBackgroundImage();
 
         // Request landscape orientation on mobile devices
         requestLandscapeOrientation();
@@ -370,7 +371,12 @@ const sketch = (p: p5) => {
     };
 
     p.draw = () => {
-        p.background(backgroundImage);
+        // Clear background - use image if loaded, otherwise use gray
+        if (backgroundImage) {
+            p.background(backgroundImage);
+        } else {
+            p.background(200);
+        }
 
         // Only run game loop if game is initialized (after login)
         if (!isGameInitialized) return;
