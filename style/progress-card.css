@@ -122,7 +122,8 @@
 }
 
 /* Mobile landscape responsive styles */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) and (orientation: landscape),
+       screen and (max-height: 600px) and (orientation: landscape) {
     #progress-card {
         top: 8px;
         padding: 0px 8px;

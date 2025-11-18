@@ -26,6 +26,19 @@
     background-color: #3498db;
 }
 
+#fullscreen-btn {
+    margin-top: 8px;
+    font-size: 16px;
+}
+
+#fullscreen-btn.active {
+    background-color: #4caf50;
+}
+
+#fullscreen-btn.active:hover {
+    background-color: #66bb6a;
+}
+
 /* Pan Controls */
 #pan-controls {
     position: fixed;
@@ -125,12 +138,16 @@
 }
 
 /* Mobile landscape responsive styles */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) and (orientation: landscape),
+       screen and (max-height: 600px) and (orientation: landscape) {
     /* Zoom Controls */
     #zoom-controls {
-        display: none;
         bottom: 10px;
         right: 10px;
+    }
+
+    #zoom-in-btn, #zoom-out-btn, #zoom-reset-btn {
+        display: none;
     }
 
     #zoom-controls button {

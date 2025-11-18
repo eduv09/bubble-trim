@@ -228,14 +228,15 @@
 }
 
 /* Mobile landscape responsive styles */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) and (orientation: landscape),
+       screen and (max-height: 600px) and (orientation: landscape) {
     #levels-panel {
-        width: 95%;
-        padding: 6rem 3rem 1rem 1rem;
+        width: 100%;
+        padding: 6rem 1rem 1rem 1rem;
     }
 
     .levels-panel-header {
-        max-width: 100%;
+        max-width: 90%;
         margin-bottom: 1rem;
         flex-wrap: wrap;
         gap: 0.5rem;
@@ -263,9 +264,9 @@
     }
 
     .levels-grid {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 1rem;
-        max-width: 100%;
+        max-width: 90%;
         padding-bottom: 2rem;
         margin-bottom: 6rem;
     }

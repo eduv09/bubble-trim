@@ -185,11 +185,12 @@
 }
 
 /* Responsive design - Mobile landscape */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) and (orientation: landscape),
+       screen and (max-height: 600px) and (orientation: landscape) {
     #result-panel {
         padding: 16px 24px;
         min-width: auto;
-        max-width: 85%;
+        max-width: 50%;
         border-radius: 16px;
     }
 

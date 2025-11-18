@@ -45,6 +45,86 @@ function requestLandscapeOrientation() {
     }
 }
 
+/**
+ * Detect if running on iOS device
+ */
+function isIOSDevice(): boolean {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+/**
+ * Toggle fullscreen mode
+ * Supports both desktop and mobile browsers with various vendor prefixes
+ * Note: iOS devices don't support fullscreen API (except for video elements)
+ */
+function toggleFullscreen() {
+    // iOS doesn't support fullscreen API
+    if (isIOSDevice()) {
+        alert('Fullscreen mode is not supported on iOS devices.\n\nFor a fullscreen experience, add this page to your home screen:\n1. Tap the Share button\n2. Select "Add to Home Screen"');
+        return;
+    }
+
+    const doc = document as any;
+    const docEl = document.documentElement as any;
+
+    if (!doc.fullscreenElement && !doc.webkitFullscreenElement &&
+        !doc.mozFullScreenElement && !doc.msFullscreenElement && !doc.webkitCurrentFullScreenElement) {
+        // Enter fullscreen
+        if (docEl.requestFullscreen) {
+            docEl.requestFullscreen();
+        } else if (docEl.webkitRequestFullscreen) {
+            // Safari (desktop)
+            docEl.webkitRequestFullscreen();
+        } else if (docEl.mozRequestFullScreen) {
+            // Firefox
+            docEl.mozRequestFullScreen();
+        } else if (docEl.msRequestFullscreen) {
+            // IE/Edge
+            docEl.msRequestFullscreen();
+        } else {
+            console.log('Fullscreen API not supported on this device');
+            alert('Fullscreen mode is not supported on this device.');
+        }
+    } else {
+        // Exit fullscreen
+        if (doc.exitFullscreen) {
+            doc.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+            doc.webkitExitFullscreen();
+        } else if (doc.mozCancelFullScreen) {
+            doc.mozCancelFullScreen();
+        } else if (doc.msExitFullscreen) {
+            doc.msExitFullscreen();
+        }
+    }
+}/**
+ * Update fullscreen button appearance based on current state
+ * Checks multiple vendor-prefixed properties for cross-browser compatibility
+ */
+function updateFullscreenButton() {
+    const doc = document as any;
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+    if (fullscreenBtn) {
+        const isFullscreen = !!(doc.fullscreenElement ||
+                                 doc.webkitFullscreenElement ||
+                                 doc.webkitCurrentFullScreenElement ||
+                                 doc.mozFullScreenElement ||
+                                 doc.msFullscreenElement);
+
+        if (isFullscreen) {
+            fullscreenBtn.classList.add('active');
+            fullscreenBtn.textContent = '⛶'; // Exit fullscreen icon
+            fullscreenBtn.title = 'Exit Fullscreen';
+        } else {
+            fullscreenBtn.classList.remove('active');
+            fullscreenBtn.textContent = '⛶'; // Enter fullscreen icon
+            fullscreenBtn.title = 'Enter Fullscreen';
+        }
+    }
+}
+
 const sketch = (p: p5) => {
     let camera: CameraController;
     let gameState: GameState;
@@ -332,6 +412,25 @@ const sketch = (p: p5) => {
         zoomInBtn?.addEventListener('click', () => camera.zoomIn());
         zoomOutBtn?.addEventListener('click', () => camera.zoomOut());
         zoomResetBtn?.addEventListener('click', () => camera.reset());
+
+        // Setup fullscreen toggle
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        if (fullscreenBtn) {
+            // Hide fullscreen button on iOS devices since it's not supported
+            if (isIOSDevice()) {
+                fullscreenBtn.style.display = 'none';
+            } else {
+                fullscreenBtn.addEventListener('click', () => {
+                    toggleFullscreen();
+                });
+
+                // Listen for fullscreen changes to update button state
+                document.addEventListener('fullscreenchange', updateFullscreenButton);
+                document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+                document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+                document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+            }
+        }
 
         // Setup left-click panning controls
         const leftPanToggle = document.getElementById('left-pan-toggle') as HTMLInputElement;

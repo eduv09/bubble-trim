@@ -149,7 +149,8 @@
 }
 
 /* Mobile landscape responsive styles */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) and (orientation: landscape),
+       screen and (max-height: 600px) and (orientation: landscape) {
     #login-panel {
         padding: 20px 0;
         align-items: flex-start;

@@ -308,7 +308,8 @@
 }
 
 /* Mobile landscape responsive styles */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) and (orientation: landscape),
+       screen and (max-height: 600px) and (orientation: landscape) {
     .stats-landing-panel {
         padding: 16px 12px;
     }
