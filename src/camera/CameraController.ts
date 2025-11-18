@@ -75,7 +75,10 @@ export class CameraController {
         const scaleY = availableHeight / circlesBoundHeight;
 
         // Use the smaller scale to ensure everything fits
-        return Math.min(scaleX, scaleY, 1.5); // Cap maximum zoom at 1.5x
+        const calculatedZoom = Math.min(scaleX, scaleY);
+
+        // Clamp between min (0.2) and max (5.0) zoom limits to match zoomTowardsPoint
+        return Math.max(0.2, Math.min(calculatedZoom, 5.0));
     }
 
     /**
@@ -110,10 +113,15 @@ export class CameraController {
         // Get world position before zoom
         const worldPosBefore = this.screenToWorld(targetX, targetY);
 
-        // Apply zoom
+        // Apply zoom with clamping instead of early return
         const newZoom = this.zoomLevel * zoomFactor;
-        if (newZoom < minZoom || newZoom > maxZoom) return;
-        this.zoomLevel = newZoom;
+        if (newZoom < minZoom) {
+            this.zoomLevel = minZoom;
+        } else if (newZoom > maxZoom) {
+            this.zoomLevel = maxZoom;
+        } else {
+            this.zoomLevel = newZoom;
+        }
 
         // Get world position after zoom
         const worldPosAfter = this.screenToWorld(targetX, targetY);
