@@ -122,10 +122,9 @@ const sketch = (p: p5) => {
 
     p.setup = () => {
         p.createCanvas(p.windowWidth, p.windowHeight);
-        
+
         // Load background image with fallback
         backgroundImage = loadBackgroundImage();
-        p.background(200); // Gray background while loading
 
         // Request landscape orientation on mobile devices
         requestLandscapeOrientation();
