@@ -38,3 +38,6 @@
 
 /* Countdown overlay */
 @import url('countdown.css');
+
+/* Rotate prompt for landscape orientation */
+@import url('rotate-prompt.css');

@@ -46,7 +46,7 @@ export class PlayerCard {
                 <div class="player-card-expanded" id="player-card-expanded">
                     <div class="player-stats-container">
                         <h3 class="stats-title">Player Statistics</h3>
-                        <div class="stats-content">
+                        <div class="player-stats-content">
                             <!-- Stats will be populated here in the future -->
                             <p class="stats-placeholder">More stats coming soon!</p>
                         </div>
@@ -161,7 +161,7 @@ export class PlayerCard {
      * @param stats - Stats object to display
      */
     updateStats(stats?: any): void {
-        const statsContent = this.cardElement?.querySelector('.stats-content');
+        const statsContent = this.cardElement?.querySelector('.player-stats-content');
         if (statsContent && stats) {
             // Future implementation: populate with actual stats
             // For now, just show placeholder

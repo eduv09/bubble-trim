@@ -4,7 +4,7 @@
     "description": "Circle game prototype",
     "scripts": {
         "start": "parcel index.html",
-        "host": "python3 -m http.server 8000",
+        "host": "python3 -m http.server 8000 --bind 0.0.0.0",
         "build": "parcel build index.html",
         "compile": "tsc",
         "update-stats": "npx ts-node src/admin/updateStats.ts"

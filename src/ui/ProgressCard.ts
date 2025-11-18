@@ -41,7 +41,7 @@ export class ProgressCard {
                 <div class="lives-section">
                     <div id="lives-container" class="lives-container"></div>
                 </div>
-                <div class="stats-section">
+                <div class="progress-stats-section">
                     <div class="timer-display">
                         <span class="stat-icon">⏱️</span>
                         <span id="timer-value" class="stat-value">00:00</span>

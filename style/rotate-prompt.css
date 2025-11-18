@@ -1,0 +1,55 @@
+/**
+ * Rotate Prompt - Forces landscape orientation on mobile devices
+ * Shows a fullscreen overlay when device is in portrait mode
+ */
+
+.rotate-prompt {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 10000;
+  justify-content: center;
+  align-items: center;
+}
+
+.rotate-prompt-content {
+  text-align: center;
+  color: white;
+  padding: 2rem;
+}
+
+.rotate-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: rotate-pulse 2s ease-in-out infinite;
+}
+
+.rotate-prompt-content p {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+@keyframes rotate-pulse {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(90deg) scale(1.2);
+  }
+}
+
+/* Show prompt only on mobile devices in portrait mode */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  .rotate-prompt {
+    display: flex;
+  }
+  
+  /* Hide all other content when in portrait */
+  body > *:not(.rotate-prompt) {
+    display: none !important;
+  }
+}

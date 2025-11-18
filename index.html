@@ -2,7 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="screen-orientation" content="landscape" />
+    <meta name="x5-orientation" content="landscape" />
+    <meta name="x5-fullscreen" content="true" />
     <title>Circle Game Prototype</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
     <script type="importmap">
@@ -19,8 +24,11 @@
     <link rel="stylesheet" href="style/stats-landing.css" />
   </head>
   <body>
-    <div id="map-controls" style="display: none;">
-      <!-- Extra buttons will be added programmatically -->
+    <div id="rotate-prompt" class="rotate-prompt">
+      <div class="rotate-prompt-content">
+        <div class="rotate-icon">📱 ↻</div>
+        <p>Please rotate your device to landscape mode</p>
+      </div>
     </div>
     <button id="levels-menu-btn" class="levels-menu-button hidden">
       📋 Levels
@@ -38,9 +46,9 @@
       Progress: <span id="progress-value">0%</span>
     </div>
     <div id="zoom-controls">
-      <button id="zoom-in-btn">Zoom In (+)</button>
-      <button id="zoom-out-btn">Zoom Out (-)</button>
-      <button id="zoom-reset-btn">Reset View</button>
+      <button id="zoom-in-btn">+</button>
+      <button id="zoom-out-btn">-</button>
+      <button id="zoom-reset-btn">⟲</button>
     </div>
     <div id="pan-controls">
       <label for="left-pan-toggle">
@@ -49,7 +57,7 @@
       </label>
       <div id="pan-factor-container">
         <label for="pan-factor-slider">
-          Quantidade de arrasto: <span id="pan-factor-value">50%</span>
+          Quantidade de arrasto: <span id="pan-factor-value">70%</span>
         </label>
         <input
           type="range"

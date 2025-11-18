@@ -88,14 +88,14 @@ export class StatsLandingPage {
                     <button id="play-button" class="btn-play">PLAY</button>
 
                     <div class="stats-content">
-                        <section class="stats-section">
+                        <section class="stats-section stats-section-leaderboard">
                             <h2 class="section-title">🏆 Top Players</h2>
                             <div id="leaderboard" class="leaderboard-list">
                                 <div class="loading-text">Loading...</div>
                             </div>
                         </section>
 
-                        <section class="stats-section">
+                        <section class="stats-section stats-section-game-stats">
                             <h2 class="section-title">🎮 Game Statistics</h2>
                             <div id="game-stats" class="game-stats-grid">
                                 <div class="loading-text">Loading...</div>

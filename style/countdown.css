@@ -56,15 +56,3 @@
     }
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    #countdown-number {
-        font-size: 15rem;
-    }
-}
-
-@media (max-width: 480px) {
-    #countdown-number {
-        font-size: 10rem;
-    }
-}

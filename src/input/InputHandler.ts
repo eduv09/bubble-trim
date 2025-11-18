@@ -24,7 +24,7 @@ export class InputHandler {
         // Don't draw during countdown
         if (this.gameState.isCountingDown) return;
 
-        if (this.p.mouseIsPressed && this.p.mouseButton === this.p.LEFT) {
+        if (this.p.mouseIsPressed && this.p.mouseButton === this.p.LEFT && this.gameState.isHunting) {
             this.p.push();
             this.p.stroke(255, 204, 0);
             this.p.strokeWeight(4);

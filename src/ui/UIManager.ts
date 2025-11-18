@@ -4,29 +4,6 @@ import { IGameStats } from '../game/StatsCollector.js';
  * UIManager - Handles all UI elements like buttons, panels, and progress display
  */
 export class UIManager {
-    /**
-     * Creates and adds a level button to the map-controls container
-     * @param label - The text label for the button
-     * @param onClick - The callback function when button is clicked
-     * @param id - Optional custom ID for the button (auto-generated if not provided)
-     * @returns The created button element
-     */
-    static createLevelButton(label: string, onClick: () => void, id?: string): HTMLButtonElement {
-        const container = document.getElementById('map-controls');
-        if (!container) {
-            throw new Error('map-controls container not found');
-        }
-
-        const button = document.createElement('button');
-        button.textContent = label;
-        if (id) {
-            button.id = id;
-        }
-        button.addEventListener('click', onClick);
-        container.appendChild(button);
-
-        return button;
-    }
 
     /**
      * Updates the progress display

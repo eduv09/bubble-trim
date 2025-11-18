@@ -20,6 +20,31 @@ import { FirestoreService } from './data/FirestoreService.js';
 import { NotificationManager } from './ui/NotificationManager.js';
 import { StatsLandingPage } from './ui/StatsLandingPage.js';
 
+/**
+ * Request landscape orientation using the Screen Orientation API
+ * This will lock the screen to landscape mode on supported devices
+ */
+function requestLandscapeOrientation() {
+    // Check if the Screen Orientation API is available
+    const screenOrientation = screen.orientation as any;
+    if (screenOrientation && screenOrientation.lock) {
+        // Try to lock to landscape mode
+        screenOrientation.lock('landscape').catch((err: any) => {
+            console.log('Orientation lock not supported or failed:', err);
+            // Fallback: The CSS media query will handle the visual prompt
+        });
+    } else if ((screen as any).lockOrientation) {
+        // Fallback for older browsers
+        (screen as any).lockOrientation('landscape');
+    } else if ((screen as any).mozLockOrientation) {
+        // Firefox fallback
+        (screen as any).mozLockOrientation('landscape');
+    } else if ((screen as any).msLockOrientation) {
+        // IE/Edge fallback
+        (screen as any).msLockOrientation('landscape');
+    }
+}
+
 const sketch = (p: p5) => {
     let camera: CameraController;
     let gameState: GameState;
@@ -35,12 +60,75 @@ const sketch = (p: p5) => {
     let firestoreService: FirestoreService;
     let statsLandingPage: StatsLandingPage;
     let isGameInitialized = false;
-    const backgroundImage = p.loadImage('../assets/background.png');
+    let backgroundImage: p5.Image;
 
+    /**
+     * Load background image with fallback paths
+     */
+    const loadBackgroundImage = (): p5.Image => {
+        // Try loading from both possible paths
+        // First try relative path (for local development)
+        let img = p.loadImage(
+            '../assets/background.png',
+            () => {
+                console.log('Background loaded from ../assets/background.png');
+            },
+            () => {
+                // If that fails, try the deployment path
+                console.log('Trying alternative path: ./assets/background.png');
+                img = p.loadImage(
+                    './assets/background.png',
+                    () => {
+                        console.log('Background loaded from ./assets/background.png');
+                    },
+                    (err) => {
+                        console.error('Failed to load background image from both paths', err);
+                    }
+                );
+            }
+        );
+        return img;
+    };
+
+    /**
+     * Check if any panel/overlay is currently visible
+     */
+    const isAnyPanelVisible = (): boolean => {
+        // Check if login panel is visible
+        const loginPanel = document.getElementById('login-panel');
+        if (loginPanel && loginPanel.style.display !== 'none') {
+            return true;
+        }
+
+        // Check if stats landing page is visible
+        const statsPanel = document.getElementById('stats-landing-panel');
+        if (statsPanel && statsPanel.style.display !== 'none') {
+            return true;
+        }
+
+        // Check if levels panel is visible
+        if (levelsPanel && levelsPanel.isVisible()) {
+            return true;
+        }
+
+        // Check if result panel is visible
+        const resultPanel = document.getElementById('result-panel');
+        if (resultPanel && resultPanel.style.display !== 'none') {
+            return true;
+        }
+
+        return false;
+    };
 
     p.setup = () => {
         p.createCanvas(p.windowWidth, p.windowHeight);
-        p.background(backgroundImage);
+        
+        // Load background image with fallback
+        backgroundImage = loadBackgroundImage();
+        p.background(200); // Gray background while loading
+
+        // Request landscape orientation on mobile devices
+        requestLandscapeOrientation();
 
         // Initialize Firestore service
         firestoreService = new FirestoreService();
@@ -288,8 +376,9 @@ const sketch = (p: p5) => {
         // Only run game loop if game is initialized (after login)
         if (!isGameInitialized) return;
 
-        // Don't allow interactions during countdown
-        if (!gameState.isCountingDown) {
+        // Don't allow interactions during countdown or when panels are visible
+        const panelVisible = isAnyPanelVisible();
+        if (!gameState.isCountingDown && !panelVisible) {
             if (gameState.isPlaying) {
                 // Handle cutting logic FIRST (before camera panning changes transform)
                 inputHandler.handleCutting();
@@ -300,7 +389,9 @@ const sketch = (p: p5) => {
         }
 
         // Draw the cutting line (in screen space, before transform)
-        inputHandler.drawCuttingLine();
+        if (!panelVisible) {
+            inputHandler.drawCuttingLine();
+        }
 
         // Apply camera transformations
         camera.applyTransform();
@@ -316,13 +407,28 @@ const sketch = (p: p5) => {
     };
 
     p.mousePressed = () => {
-        if (isGameInitialized && !gameState.isCountingDown) {
+        if (isGameInitialized && !gameState.isCountingDown && !isAnyPanelVisible()) {
             inputHandler.onMousePressed();
         }
     };
 
+    p.touchStarted = () => {
+        if (p.touches.length > 1) {
+            return;
+        }
+        if (isGameInitialized && !gameState.isCountingDown && !isAnyPanelVisible()) {
+            inputHandler.onMousePressed();
+        }
+    };
+
+    p.touchEnded = () => {
+        if (isGameInitialized && !gameState.isCountingDown && !isAnyPanelVisible()) {
+            inputHandler.onMouseReleased();
+        }
+    };
+
     p.mouseReleased = () => {
-        if (isGameInitialized && !gameState.isCountingDown) {
+        if (isGameInitialized && !gameState.isCountingDown && !isAnyPanelVisible()) {
             inputHandler.onMouseReleased();
         }
     };

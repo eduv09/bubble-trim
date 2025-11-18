@@ -2,31 +2,6 @@
  * Controls styles - Level buttons, camera controls, pan controls
  */
 
-/* Level/Map Controls - DEPRECATED: Now using LevelsPanel instead */
-#map-controls {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1000;
-    display: none; /* Hidden - replaced by levels panel */
-    flex-direction: column;
-}
-
-#map-controls button {
-    padding: 8px 12px;
-    margin-bottom: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    border: 1px solid #555;
-    background-color: #333;
-    color: white;
-    border-radius: 4px;
-}
-
-#map-controls button:hover {
-    background-color: #4caf50;
-}
-
 /* Zoom Controls */
 #zoom-controls {
     position: fixed;
@@ -38,14 +13,13 @@
 }
 
 #zoom-controls button {
-    padding: 8px 12px;
-    margin-top: 5px;
+    padding: 12px 16px;
     font-size: 14px;
     cursor: pointer;
     border: 1px solid #555;
     background-color: #333;
     color: white;
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
 #zoom-controls button:hover {
@@ -64,6 +38,13 @@
     color: #fff;
     font-size: 14px;
     min-width: 200px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#pan-controls input[type="checkbox"] {
+    min-width: 20px;
+    max-width: 20px;
+    cursor: pointer;
 }
 
 #pan-controls label {
@@ -76,8 +57,6 @@
 #left-pan-toggle {
     margin-right: 8px;
     cursor: pointer;
-    width: 16px;
-    height: 16px;
 }
 
 #pan-factor-container {
@@ -133,4 +112,78 @@
 
 #pan-factor-slider:hover::-moz-range-thumb {
     background: #66bb6a;
+}
+
+/* Hide pan controls when levels panel is visible */
+#levels-panel:not([style*="display: none"]) ~ #pan-controls {
+    display: none;
+}
+
+/* Hide pan controls when levels panel is visible */
+#levels-panel:not([style*="display: none"]) ~ #zoom-controls {
+    display: none;
+}
+
+/* Mobile landscape responsive styles */
+@media screen and (max-width: 768px) {
+    /* Zoom Controls */
+    #zoom-controls {
+        bottom: 10px;
+        right: 10px;
+    }
+
+    #zoom-controls button {
+        padding: 8px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+    }
+
+    /* Pan Controls - Modo do Tiaguinho */
+    #pan-controls {
+        bottom: 10px;
+        left: 10px;
+        padding: 8px 10px;
+        border-radius: 5px;
+        font-size: 11px;
+        min-width: 100px;
+        max-width: 120px;
+    }
+
+    #pan-controls input[type="checkbox"] {
+        min-width: 16px;
+        max-width: 16px;
+    }
+
+    #pan-controls label {
+        margin-bottom: 6px;
+    }
+
+    #left-pan-toggle {
+        margin-right: 6px;
+    }
+
+    #pan-factor-container {
+        display: none;
+        margin-top: 6px;
+        padding-top: 6px;
+    }
+
+    #pan-factor-container label {
+        margin-bottom: 4px;
+        font-size: 10px;
+    }
+
+    #pan-factor-slider {
+        height: 5px;
+    }
+
+    #pan-factor-slider::-webkit-slider-thumb {
+        width: 14px;
+        height: 14px;
+    }
+
+    #pan-factor-slider::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+    }
 }

@@ -5,14 +5,14 @@
 #player-card {
     position: fixed;
     top: 15px;
-    right: 200px;
+    right: 20px;
     z-index: 1000;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     overflow: hidden;
     transition: all 0.3s ease;
-    min-width: 240px;
+    min-width: 140px;
     max-width: 240px;
 }
 
@@ -51,7 +51,7 @@
     color: white;
 }
 
-.player-info {
+#player-card .player-info {
     flex: 1;
     min-width: 0;
 }
@@ -107,7 +107,7 @@
     color: #333;
 }
 
-.stats-content {
+.player-stats-content {
     font-size: 0.9rem;
     color: #666;
 }
@@ -144,4 +144,62 @@
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+/* Mobile landscape responsive styles */
+@media screen and (max-width: 768px) {
+    #player-card {
+        top: 10px;
+        right: 10px;
+        min-width: auto;
+        max-width: 150px;
+    }
+
+    .player-card-compact {
+        padding: 8px 10px;
+        gap: 8px;
+    }
+
+    .player-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .player-avatar svg {
+        width: 20px;
+        height: 20px;
+    }
+
+
+    .expand-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    #player-card.expanded .player-card-expanded {
+        padding: 12px;
+    }
+
+    .stats-title {
+        font-size: 1rem;
+        margin: 0 0 12px 0;
+    }
+
+    .player-stats-content {
+        font-size: 0.85rem;
+    }
+
+    .stats-placeholder {
+        padding: 16px 0;
+    }
+
+    .player-actions {
+        margin-top: 16px;
+        padding-top: 12px;
+    }
+
+    .btn-logout {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
 }
